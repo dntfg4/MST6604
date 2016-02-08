@@ -22,17 +22,14 @@ location_list = [POINTER_VALUE, ACTUAL_VALUE, FORWARDING_POINTER]
 
 class Tree:
     def __init__(self, algorithm):
-        self.__node_list = []
         self.__root_node = None
         self.__algorithm = algorithm
         if self.__algorithm is not None:
             self.__algorithm.set_tree(self)
 
-    def add_node(self,n):
-        if self.__node_list.count(n) == 0:
-            self.__node_list.append(n)
-            if n.is_root():
-                self.__root_node = n
+    def add_node(self, node):
+        if node.is_root():
+            self.__root_node = node
 
     def get_root_node(self):
         return self.__root_node
@@ -308,13 +305,11 @@ class ValueAlgorithm(Algorithm):
             return node
 
         # check the node
-        if node.find_ms(ms, ACTUAL_VALUE) is not None:
+        if node.find_ms(ms, self.get_type()) is not None:
             found = True
-            if node is node.get_ms_actual_location(ms):
-                return node
-
-        # look up the tree
-        if not found:
+            return node.get_ms_location(ms, self.get_type())
+        else:
+            # look up the tree
             if node.is_root():
                 return None
 
@@ -324,7 +319,7 @@ class ValueAlgorithm(Algorithm):
             self.increment_search_count()
 
             while not found:
-                if node.find_ms(ms, ACTUAL_VALUE) is not None:
+                if node.find_ms(ms, self.get_type()) is not None:
                     found = True
                     return node.get_ms_location(ms, self.get_type())
                 else:
@@ -398,17 +393,17 @@ class PointerAlgorithm(Algorithm):
             node = node.get_parent_node()
             self.increment_search_count()
 
-            while (not found) and (not node.is_root()):
+            while (not found) and (node is not None):
                 if node.find_ms(ms, self.get_type()) is not None:
                     found = True
                 else:
                     node = node.get_parent_node()
                     self.increment_search_count()
 
-            # Now look down the pointer list
-            if found:
-                if node is node.get_ms_location(ms, self.get_type()):
-                    return node
+        # Now look down the pointer list
+        if found:
+            if node is node.get_ms_location(ms, self.get_type()):
+                return node
 
             while node is not node.get_ms_location(ms, self.get_type()):
                 node = node.get_ms_location(ms, self.get_type())
@@ -448,8 +443,10 @@ class PointerAlgorithm(Algorithm):
 
         lca.set_ms_location(ms, ms_node, self.get_type())
         self.increment_update_count()
-        ms_node.add_ms_location(ms, ms_node, self.get_type())
-        self.increment_update_count()
+
+        if lca is not ms_node:
+            ms_node.add_ms_location(ms, ms_node, self.get_type())
+            self.increment_update_count()
 
         ms.set_node(node, self.get_type())
 
@@ -498,10 +495,10 @@ if __name__ == "__main__":
     tpa.put_ms_into_node_name(ms2, 17)
     tva.put_ms_into_node_name(ms2, 17)
 
-    b = tpa.find_node_and_query_ms_location_from_node(ms1, 20)
-    tpa.find_node_and_move_ms_location_from_node(ms1, 20)
-    c = tva.find_node_and_query_ms_location_from_node(ms1, 20)
-    tva.find_node_and_move_ms_location_from_node(ms1, 20)
+    b = tpa.find_node_and_query_ms_location_from_node(ms1, 11)
+    tpa.find_node_and_move_ms_location_from_node(ms1, 11)
+    c = tva.find_node_and_query_ms_location_from_node(ms1, 11)
+    tva.find_node_and_move_ms_location_from_node(ms1, 11)
     print
     print
     print "PA Search Count = %d" % tpa.get_search_count()
