@@ -18,9 +18,12 @@ LOCATION = "location"
 
 
 class Tree:
-    def __init__(self):
+    def __init__(self, algorithm):
         self.__node_list = []
         self.__root_node = None
+        self.__algorithm = algorithm
+        if self.__algorithm is not None:
+            self.__algorithm.set_tree(self)
 
     def add_node(self,n):
         if self.__node_list.count(n) == 0:
@@ -66,18 +69,36 @@ class Tree:
 
         node.add_ms_and_actual_location(ms, node)
         node.set_ms_pointer_location(ms, node)
-        ms.set_node(node)
+        ms.set_node(node, self.__algorithm.get_type())
 
         print node.get_name()
 
         while not node.is_root():
             node_parent = node.get_parent_node()
-            node_parent.add_ms_and_actual_location(ms, ms.get_node())
+            node_parent.add_ms_and_actual_location(ms, ms.get_node(self.__algorithm.get_type()))
             node_parent.set_ms_pointer_location(ms, node)
             node = node_parent
             print node.get_name()
 
         return True
+
+    def get_update_count(self):
+        return self.__algorithm.get_update_count()
+
+    def get_search_count(self):
+        return self.__algorithm.get_search_count()
+
+    def find_node_and_query_ms_location_from_node(self, ms, name):
+        return self.__algorithm.find_node_and_query_ms_location_from_node(ms, name)
+
+    def query_ms_location_from_node(self, ms, node):
+        return self.__algorithm.query_ms_location_from_node(self, ms, node)
+
+    def find_node_and_move_ms_location_from_node(self, ms, name):
+        return self.__algorithm.find_node_and_move_ms_location_from_node(ms, name)
+
+    def move_ms_to_node(self, ms, node):
+        return self.__algorithm.move_ms_to_node(ms, node)
 
 
 class Node:
@@ -230,7 +251,9 @@ class Node:
 class MS:
     def __init__(self, name):
         self.__name = name
-        self.__node = None
+        self.__node_list = {}
+        self.__node_list[POINTER_VALUE] = None
+        self.__node_list[ACTUAL_VALUE] = None
 
     def set_ms_name(self, name):
         self.__name = name
@@ -238,17 +261,18 @@ class MS:
     def get_ms_name(self):
         return self.__name
 
-    def set_node(self, node):
-        self.__node = node
+    def set_node(self, node, type):
+        self.__node_list[type] = node
 
-    def get_node(self):
-        return self.__node
+    def get_node(self, type):
+        return self.__node_list[type]
 
 class Algorithm:
-    def __init__(self, tree):
+    def __init__(self, type):
         self.__search_count = 0
         self.__update_count = 0
-        self.__tree = tree
+        self.__tree = None
+        self.__type = type
 
     def set_search_count(self, value):
         self.__search_count = value
@@ -268,19 +292,31 @@ class Algorithm:
     def increment_update_count(self):
         self.__update_count += 1
 
+    def set_tree(self, tree):
+        self.__tree = tree
+
     def get_tree(self):
         return self.__tree
 
+    def get_type(self):
+        return self.__type
+
+    def find_node_and_query_ms_location_from_node(self, ms, name):
+        pass
+
     def query_ms_location_from_node(self, ms, node):
-        return
+        return None
+
+    def find_node_and_move_ms_location_from_node(self, ms, name):
+        pass
 
     def move_ms_to_node(self, ms, node):
-        return
+        return None
 
 
 class ValueAlgorithm(Algorithm):
-    def __init__(self, tree):
-        Algorithm.__init__(self, tree)
+    def __init__(self):
+        Algorithm.__init__(self, ACTUAL_VALUE)
 
     def find_node_and_query_ms_location_from_node(self, ms, name):
         node = self.get_tree().get_node(name)
@@ -311,14 +347,14 @@ class ValueAlgorithm(Algorithm):
             node = node.get_parent_node()
             self.increment_search_count()
 
-            while (not found) and (not node.is_root()):
+            while not found:
                 if node.find_ms(ms, ACTUAL_VALUE) is not None:
                     found = True
-                    if node is node.get_ms_actual_location(ms):
-                        return node
+                    return node.get_ms_actual_location(ms)
                 else:
-                    node = node.get_parent_node()
-                    self.increment_search_count()
+                    if not node.is_root():
+                        node = node.get_parent_node()
+                        self.increment_search_count()
 
         return None
 
@@ -330,7 +366,7 @@ class ValueAlgorithm(Algorithm):
     def move_ms_to_node(self, ms, node):
         self.set_update_count(0)
 
-        ms_node = ms.get_node()
+        ms_node = ms.get_node(self.get_type())
 
         if ms_node is node:
             return
@@ -351,12 +387,12 @@ class ValueAlgorithm(Algorithm):
             ms_node = ms_node.get_parent_node()
             self.increment_update_count()
 
-        ms.set_node(node)
+        ms.set_node(node, self.get_type())
 
 
 class PointerAlgorithm(Algorithm):
-    def __init__(self, tree):
-        Algorithm.__init__(self, tree)
+    def __init__(self):
+        Algorithm.__init__(self, POINTER_VALUE)
 
     def find_node_and_query_ms_location_from_node(self, ms, name):
         node = self.get_tree().get_node(name)
@@ -415,7 +451,7 @@ class PointerAlgorithm(Algorithm):
     def move_ms_to_node(self, ms, node):
         self.set_update_count(0)
 
-        ms_node = ms.get_node()
+        ms_node = ms.get_node(self.get_type())
 
         if ms_node is node:
             return
@@ -442,7 +478,7 @@ class PointerAlgorithm(Algorithm):
             ms_node.set_ms_pointer_location(ms, ms_node)
         self.increment_update_count()
 
-        ms.set_node(node)
+        ms.set_node(node, self.get_type())
 
 
 def fill_tree(tree):
@@ -474,24 +510,33 @@ def fill_tree(tree):
 
 
 if __name__ == "__main__":
-    t = Tree()
-    fill_tree(t)
+    tpa = Tree(PointerAlgorithm())
+    tva = Tree(ValueAlgorithm())
+    fill_tree(tpa)
+    fill_tree(tva)
 
     ms1 = MS(1)
 
-    t.put_ms_into_node_name(ms1, 6)
+    tpa.put_ms_into_node_name(ms1, 6)
+    tva.put_ms_into_node_name(ms1, 6)
 
     ms2 = MS(2)
 
-    t.put_ms_into_node_name(ms2, 17)
-    pa = ValueAlgorithm(t)
-    print pa.get_search_count()
-    print pa.get_update_count()
-    c = pa.find_node_and_query_ms_location_from_node(ms2, 20)
-    print pa.get_update_count()
-    print pa.get_search_count()
-    pa.find_node_and_move_ms_location_from_node(ms1, 20)
-    print pa.get_update_count()
-    print pa.get_search_count()
+    tpa.put_ms_into_node_name(ms2, 17)
+    tva.put_ms_into_node_name(ms2, 17)
 
+    b = tpa.find_node_and_query_ms_location_from_node(ms1, 20)
+    tpa.find_node_and_move_ms_location_from_node(ms1, 20)
+    c = tva.find_node_and_query_ms_location_from_node(ms1, 20)
+    tva.find_node_and_move_ms_location_from_node(ms1, 20)
+    print
+    print
+    print "PA Search Count = %d" % tpa.get_search_count()
+    print "PA Update Count = %d" % tpa.get_update_count()
+    print "VA Search Count = %d" % tva.get_search_count()
+    print "VA Update Count = %d" % tva.get_update_count()
+    if b.get_name() ==  c.get_name():
+        print "B is C"
+    else:
+        print "B is NOT C"
 
