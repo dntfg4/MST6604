@@ -10,11 +10,14 @@ __copyright__ = 'Copyright (c) 2016 James Soehlke and David N. Taylor'
 __license__ = 'Python'
 
 
+
 POINTER_VALUE = "pointer"
 ACTUAL_VALUE = "value"
 FORWARDING_POINTER = "forwarding"
 MOBILE_STATION = "mobile station"
 LOCATION = "location"
+
+location_list = [POINTER_VALUE, ACTUAL_VALUE, FORWARDING_POINTER]
 
 
 class Tree:
@@ -67,16 +70,20 @@ class Tree:
         if node is None:
             return False
 
-        node.add_ms_and_actual_location(ms, node)
-        node.set_ms_pointer_location(ms, node)
+        if self.__algorithm.get_type() == ACTUAL_VALUE:
+            node.add_ms_location(ms, node, self.__algorithm.get_type())
+        else:
+            node.add_ms_location(ms, node, self.__algorithm.get_type())
         ms.set_node(node, self.__algorithm.get_type())
 
         print node.get_name()
 
         while not node.is_root():
             node_parent = node.get_parent_node()
-            node_parent.add_ms_and_actual_location(ms, ms.get_node(self.__algorithm.get_type()))
-            node_parent.set_ms_pointer_location(ms, node)
+            if self.__algorithm.get_type() == ACTUAL_VALUE:
+                node_parent.add_ms_location(ms, ms.get_node(self.__algorithm.get_type()), self.__algorithm.get_type())
+            else:
+                node_parent.add_ms_location(ms, node, self.__algorithm.get_type())
             node = node_parent
             print node.get_name()
 
@@ -161,9 +168,9 @@ class Node:
             self.__ms_list[l] = {}
             self.__ms_list[l][MOBILE_STATION] = ms
             self.__ms_list[l][LOCATION] = {}
-            self.__ms_list[l][LOCATION][POINTER_VALUE] = None
-            self.__ms_list[l][LOCATION][ACTUAL_VALUE] = None
-            self.__ms_list[l][LOCATION][FORWARDING_POINTER] = None
+            it = iter(location_list)
+            for loc in it:
+                self.__ms_list[l][LOCATION][loc] = None
             print self.__ms_list.__len__()
             print self.__ms_list
 
@@ -176,74 +183,42 @@ class Node:
     def is_leaf(self):
         return self.__children_node.__len__() == 0
 
-    def add_ms_and_pointer_location(self, ms, loc):
+    def add_ms_location(self, ms, loc, loc_type):
         if self.find_ms(ms) is None:
             self.add_ms(ms)
             i = self.find_ms(ms)
-            self.__ms_list[i][LOCATION][POINTER_VALUE] = loc
-            print "add_ms_and_pointer_location"
+            self.__ms_list[i][LOCATION][loc_type] = loc
             print self.__ms_list
             return True
         else:
-            return self.set_ms_pointer_location(ms, loc)
+            return self.set_ms_location(ms, loc, loc_type)
 
-    def add_ms_and_actual_location(self, ms, loc):
-        if self.find_ms(ms) is None:
-            self.add_ms(ms)
-            i = self.find_ms(ms)
-            self.__ms_list[i][LOCATION][ACTUAL_VALUE] = loc
-            print "add_ms_and_actual_location"
-            print self.__ms_list
-            return True
-        else:
-            return self.set_ms_actual_location(ms, loc)
-
-    def set_ms_pointer_location(self, ms, loc):
+    def set_ms_location(self, ms, loc, loc_type):
         i = self.find_ms(ms)
         if i is not None:
-            self.__ms_list[i][LOCATION][POINTER_VALUE] = loc
-            print "set_ms_pointer_location"
+            self.__ms_list[i][LOCATION][loc_type] = loc
             print self.__ms_list
             return True
 
         return False
 
-    def get_ms_pointer_location(self, ms):
+    def get_ms_location(self, ms, loc_type):
         i = self.find_ms(ms)
         if i is not None:
-            return self.__ms_list[i][LOCATION][POINTER_VALUE]
+            return self.__ms_list[i][LOCATION][loc_type]
 
         return None
 
-    def set_ms_actual_location(self, ms, loc):
+    def delete_ms_location(self, ms, loc_type):
         i = self.find_ms(ms)
         if i is not None:
-            self.__ms_list[i][LOCATION][ACTUAL_VALUE] = loc
-            return True
-
-        return False
-
-    def get_ms_actual_location(self, ms):
-        i = self.find_ms(ms)
-        if i is not None:
-            return self.__ms_list[i][LOCATION][ACTUAL_VALUE]
-
-        return None
-
-    def delete_ms_pointer_location(self, ms):
-        i = self.find_ms(ms)
-        if i is not None:
-            self.__ms_list[i][LOCATION][POINTER_VALUE] = None
-            if self.__ms_list[i][LOCATION][ACTUAL_VALUE] is None:
-                del self.__ms_list[i]
-                print self.__ms_list
-
-    def delete_ms_actual_location(self, ms):
-        i = self.find_ms(ms)
-        print self.__ms_list
-        if i is not None:
-            self.__ms_list[i][LOCATION][ACTUAL_VALUE] = None
-            if self.__ms_list[i][LOCATION][POINTER_VALUE] is None:
+            self.__ms_list[i][LOCATION][loc_type] = None
+            empty = True
+            it = iter(location_list)
+            for loc in it:
+                if self.__ms_list[i][LOCATION][loc] is not None:
+                    empty = False
+            if empty:
                 del self.__ms_list[i]
                 print self.__ms_list
 
@@ -261,18 +236,19 @@ class MS:
     def get_ms_name(self):
         return self.__name
 
-    def set_node(self, node, type):
-        self.__node_list[type] = node
+    def set_node(self, node, loc_type):
+        self.__node_list[loc_type] = node
 
-    def get_node(self, type):
-        return self.__node_list[type]
+    def get_node(self, loc_type):
+        return self.__node_list[loc_type]
+
 
 class Algorithm:
-    def __init__(self, type):
+    def __init__(self, algorithm_type):
         self.__search_count = 0
         self.__update_count = 0
         self.__tree = None
-        self.__type = type
+        self.__type = algorithm_type
 
     def set_search_count(self, value):
         self.__search_count = value
@@ -350,7 +326,7 @@ class ValueAlgorithm(Algorithm):
             while not found:
                 if node.find_ms(ms, ACTUAL_VALUE) is not None:
                     found = True
-                    return node.get_ms_actual_location(ms)
+                    return node.get_ms_location(ms, self.get_type())
                 else:
                     if not node.is_root():
                         node = node.get_parent_node()
@@ -374,7 +350,7 @@ class ValueAlgorithm(Algorithm):
         lca = self.get_tree().get_lca(ms_node, node)
 
         while lca is not ms_node:
-            ms_node.delete_ms_actual_location(ms)
+            ms_node.delete_ms_location(ms, self.get_type())
             ms_node = ms_node.get_parent_node()
             self.increment_update_count()
 
@@ -382,8 +358,7 @@ class ValueAlgorithm(Algorithm):
 
         while ms_node is not None:
             ms_node_parent = ms_node.get_parent_node()
-            if not ms_node.add_ms_and_actual_location(ms, node):
-                ms_node.set_ms_actual_location(ms, node)
+            ms_node.add_ms_location(ms, node, self.get_type())
             ms_node = ms_node.get_parent_node()
             self.increment_update_count()
 
@@ -408,9 +383,9 @@ class PointerAlgorithm(Algorithm):
             return node
 
         # check the node
-        if node.find_ms(ms, POINTER_VALUE) is not None:
+        if node.find_ms(ms, self.get_type()) is not None:
             found = True
-            if node is node.get_ms_pointer_location(ms):
+            if node is node.get_ms_location(ms, self.get_type()):
                 return node
 
         # look up the tree
@@ -424,7 +399,7 @@ class PointerAlgorithm(Algorithm):
             self.increment_search_count()
 
             while (not found) and (not node.is_root()):
-                if node.find_ms(ms, POINTER_VALUE) is not None:
+                if node.find_ms(ms, self.get_type()) is not None:
                     found = True
                 else:
                     node = node.get_parent_node()
@@ -432,11 +407,11 @@ class PointerAlgorithm(Algorithm):
 
             # Now look down the pointer list
             if found:
-                if node is node.get_ms_pointer_location(ms):
+                if node is node.get_ms_location(ms, self.get_type()):
                     return node
 
-            while node is not node.get_ms_pointer_location(ms):
-                node = node.get_ms_pointer_location(ms)
+            while node is not node.get_ms_location(ms, self.get_type()):
+                node = node.get_ms_location(ms, self.get_type())
                 self.increment_search_count()
 
             return node
@@ -459,7 +434,7 @@ class PointerAlgorithm(Algorithm):
         lca = self.get_tree().get_lca(ms_node, node)
 
         while lca is not ms_node:
-            ms_node.delete_ms_pointer_location(ms)
+            ms_node.delete_ms_location(ms, self.get_type())
             ms_node = ms_node.get_parent_node()
             self.increment_update_count()
 
@@ -467,15 +442,13 @@ class PointerAlgorithm(Algorithm):
 
         while (lca is not ms_node) and (lca is not ms_node.get_parent_node()):
             ms_node_parent = ms_node.get_parent_node()
-            if not ms_node_parent.add_ms_and_pointer_location(ms, ms_node):
-                ms_node_parent.set_ms_pointer_location(ms, ms_node)
+            ms_node_parent.add_ms_location(ms, ms_node, self.get_type())
             ms_node = ms_node_parent
             self.increment_update_count()
 
-        lca.set_ms_pointer_location(ms, ms_node)
+        lca.set_ms_location(ms, ms_node, self.get_type())
         self.increment_update_count()
-        if not ms_node.add_ms_and_pointer_location(ms, ms_node):
-            ms_node.set_ms_pointer_location(ms, ms_node)
+        ms_node.add_ms_location(ms, ms_node, self.get_type())
         self.increment_update_count()
 
         ms.set_node(node, self.get_type())
@@ -535,7 +508,7 @@ if __name__ == "__main__":
     print "PA Update Count = %d" % tpa.get_update_count()
     print "VA Search Count = %d" % tva.get_search_count()
     print "VA Update Count = %d" % tva.get_update_count()
-    if b.get_name() ==  c.get_name():
+    if b.get_name() == c.get_name():
         print "B is C"
     else:
         print "B is NOT C"
