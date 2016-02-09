@@ -9,15 +9,17 @@ __date__ = '$Date: 2016/02/06 12:00:00 $'
 __copyright__ = 'Copyright (c) 2016 James Soehlke and David N. Taylor'
 __license__ = 'Python'
 
-
-
-POINTER_VALUE = "pointer"
-ACTUAL_VALUE = "value"
-FORWARDING_POINTER = "forwarding"
+POINTER = "pointer"
+ACTUAL = "value"
+FORWARDING_P = "forwarding_p"
+FORWARDING_P_P_F = "forwarding_p_p_f"
+FORWARDING_P_P_R = "forwarding_p_p_r"
 MOBILE_STATION = "mobile station"
 LOCATION = "location"
 
-location_list = [POINTER_VALUE, ACTUAL_VALUE, FORWARDING_POINTER]
+algorithm_list = [POINTER, ACTUAL, FORWARDING_P]
+location_list = [FORWARDING_P_P_F, FORWARDING_P_P_R]
+location_list[len(location_list):] = algorithm_list
 
 
 class Tree:
@@ -67,7 +69,7 @@ class Tree:
         if node is None:
             return False
 
-        if self.__algorithm.get_type() == ACTUAL_VALUE:
+        if self.__algorithm.get_type() == ACTUAL:
             node.add_ms_location(ms, node, self.__algorithm.get_type())
         else:
             node.add_ms_location(ms, node, self.__algorithm.get_type())
@@ -77,7 +79,7 @@ class Tree:
 
         while not node.is_root():
             node_parent = node.get_parent_node()
-            if self.__algorithm.get_type() == ACTUAL_VALUE:
+            if self.__algorithm.get_type() == ACTUAL:
                 node_parent.add_ms_location(ms, ms.get_node(self.__algorithm.get_type()), self.__algorithm.get_type())
             else:
                 node_parent.add_ms_location(ms, node, self.__algorithm.get_type())
@@ -218,14 +220,26 @@ class Node:
             if empty:
                 del self.__ms_list[i]
                 print self.__ms_list
+                return True
+            else:
+                return False
+        return True
+
+    def delete_all_ms_locations(self, ms):
+        i = self.find_ms(ms)
+        if i is not None:
+            del self.__ms_list[i]
+            print self.__ms_list
 
 
 class MS:
-    def __init__(self, name):
+    def __init__(self, name, max_forwards=5):
         self.__name = name
         self.__node_list = {}
-        self.__node_list[POINTER_VALUE] = None
-        self.__node_list[ACTUAL_VALUE] = None
+        self.__max_forwards = max_forwards
+        it = iter(algorithm_list)
+        for node_type in it:
+            self.__node_list[node_type] = None
 
     def set_ms_name(self, name):
         self.__name = name
@@ -238,6 +252,9 @@ class MS:
 
     def get_node(self, loc_type):
         return self.__node_list[loc_type]
+
+    def get_max_forwards(self):
+        return self.__max_forwards
 
 
 class Algorithm:
@@ -288,8 +305,8 @@ class Algorithm:
 
 
 class ValueAlgorithm(Algorithm):
-    def __init__(self):
-        Algorithm.__init__(self, ACTUAL_VALUE)
+    def __init__(self, loc_type=ACTUAL):
+        Algorithm.__init__(self, loc_type)
 
     def find_node_and_query_ms_location_from_node(self, ms, name):
         node = self.get_tree().get_node(name)
@@ -361,8 +378,8 @@ class ValueAlgorithm(Algorithm):
 
 
 class PointerAlgorithm(Algorithm):
-    def __init__(self):
-        Algorithm.__init__(self, POINTER_VALUE)
+    def __init__(self, loc_type=POINTER):
+        Algorithm.__init__(self, loc_type)
 
     def find_node_and_query_ms_location_from_node(self, ms, name):
         node = self.get_tree().get_node(name)
@@ -451,6 +468,170 @@ class PointerAlgorithm(Algorithm):
         ms.set_node(node, self.get_type())
 
 
+class ForwardingPointerPAlgorithm(PointerAlgorithm):
+    def __init__(self):
+        PointerAlgorithm.__init__(self, FORWARDING_P)
+        self.__forwarding_type = FORWARDING_P_P_F
+        self.__reverse_type = FORWARDING_P_P_R
+
+    def query_ms_location_from_node(self, ms, node):
+        self.set_search_count(0)
+
+        found = False
+
+        if node is None:
+            return node
+
+        # check the node
+        if node.find_ms(ms) is not None:
+            found = True
+            if node is ms.get_node(self.get_type()):
+                return node
+
+        # look up the tree
+        if not found:
+            if node.is_root():
+                return None
+
+            node = node.get_parent_node()
+            self.increment_search_count()
+
+            while (not found) and (node is not None):
+                if node.find_ms(ms, self.__forwarding_type) is not None:
+                    found = True
+                if (node.find_ms(ms, self.get_type()) is not None) and (node.find_ms(ms, self.__reverse_type) is None):
+                    found = True
+                else:
+                    node = node.get_parent_node()
+                    self.increment_search_count()
+
+        # Now look down the pointer list
+        if found:
+            if node is node.get_ms_location(ms, self.get_type()):
+                return node
+
+            while node is not node.get_ms_location(ms, self.get_type()):
+                next_node = node.get_ms_location(ms, self.__forwarding_type)
+                if next_node is None:
+                    next_node = node.get_ms_location(ms, self.get_type())
+                self.increment_search_count()
+                node = next_node
+
+            return node
+
+        return None
+
+    def move_ms_to_node(self, ms, node):
+        ms_node = ms.get_node(self.get_type())
+        if ms_node is node:
+            return
+
+        self.set_update_count(0)
+        level_up = self.determine_forwarding_level_up(ms)
+
+        lca = self.get_tree().get_lca(ms_node, node)
+        level_distance = self.get_node_level_distance(ms, lca)
+        if level_up < level_distance:
+            level_node_ms = self.get_ms_level_node(ms, level_up)
+            level_node = self.get_level_node(node, level_up)
+        else:
+            level_node_ms = lca
+            level_node = lca
+
+        while level_node_ms is not ms_node:
+            next_node = ms_node.get_ms_location(ms, self.get_type())
+            if next_node is None:
+                next_node = ms_node.get_ms_location(ms, self.__reverse_type)
+            else:
+                next_node = ms_node.get_parent_node()
+
+            ms_node.delete_all_ms_locations(ms)
+
+            ms_node = next_node
+            self.increment_update_count()
+
+        ms_node = node
+
+        while (level_node is not ms_node) and (level_node is not ms_node.get_parent_node()):
+            ms_node_parent = ms_node.get_parent_node()
+            ms_node_parent.add_ms_location(ms, ms_node, self.get_type())
+            ms_node = ms_node_parent
+            self.increment_update_count()
+
+        if level_node_ms is level_node:
+            level_node_ms.set_ms_location(ms, ms_node, self.get_type())
+            self.increment_update_count()
+
+            if level_node_ms is not ms_node:
+                node.add_ms_location(ms, node, self.get_type())
+                self.increment_update_count()
+        else:
+            level_node_ms.delete_all_ms_locations(ms)
+            level_node_ms.add_ms_location(ms, level_node, self.__forwarding_type)
+            level_node_ms.set_ms_location(ms, level_node, self.get_type())
+            self.increment_update_count()
+            level_node.delete_all_ms_locations(ms)
+            level_node.add_ms_location(ms, level_node_ms, self.__reverse_type)
+            level_node.set_ms_location(ms, ms_node, self.get_type())
+            self.increment_update_count()
+            node.add_ms_location(ms, node, self.get_type())
+            self.increment_update_count()
+
+        ms.set_node(node, self.get_type())
+
+    def determine_forwarding_level_up(self, ms):
+        return 1
+
+    def get_node_level_distance(self, ms, node2):
+        distance = 0
+
+        node1 = ms.get_node(self.get_type())
+
+        while node1 is not node2:
+            if node1.get_ms_location(ms, self.get_type()) is not None:
+                node1 = node1.get_parent_node()
+                distance += 1
+            else:
+                node1 = node1.get_ms_location(ms, self.__reverse_type)
+
+        return distance
+
+    def determine_number_of_forwards(self,ms):
+        forwards = 0
+        node = ms.get_node(self.get_type())
+
+        while not node.is_root():
+            if node.get_ms_location(ms, self.get_type()) is not None:
+                node = node.get_parent()
+            else:
+                node = node.get_ms_location(ms, self.__reverse_type)
+                forwards += 1
+
+        return forwards
+
+    def get_ms_level_node(self, ms, level_up):
+        node = ms.get_node(self.get_type())
+        levels = level_up
+
+        while (not node.is_root()) and (levels > 0):
+            if node.get_ms_location(ms, self.get_type()) is not None:
+                node = node.get_parent_node()
+                levels -= 1
+            else:
+                node = node.get_ms_location(ms, self.__reverse_type)
+
+        return node
+
+    def get_level_node(self, node, level_up):
+        levels = level_up
+
+        while (node is not None) and (levels > 0):
+            node = node.get_parent_node()
+            levels -= 1
+
+        return node
+
+
 def fill_tree(tree):
     root_node = Node(0)
     tree.add_node(root_node)
@@ -480,7 +661,7 @@ def fill_tree(tree):
 
 
 if __name__ == "__main__":
-    tpa = Tree(PointerAlgorithm())
+    tpa = Tree(ForwardingPointerPAlgorithm())
     tva = Tree(ValueAlgorithm())
     fill_tree(tpa)
     fill_tree(tva)
@@ -492,13 +673,15 @@ if __name__ == "__main__":
 
     ms2 = MS(2)
 
-    tpa.put_ms_into_node_name(ms2, 17)
-    tva.put_ms_into_node_name(ms2, 17)
+    tpa.put_ms_into_node_name(ms2, 20)
+    tva.put_ms_into_node_name(ms2, 20)
 
-    b = tpa.find_node_and_query_ms_location_from_node(ms1, 11)
-    tpa.find_node_and_move_ms_location_from_node(ms1, 11)
-    c = tva.find_node_and_query_ms_location_from_node(ms1, 11)
-    tva.find_node_and_move_ms_location_from_node(ms1, 11)
+    tpa.find_node_and_move_ms_location_from_node(ms1, 9)
+    tpa.find_node_and_move_ms_location_from_node(ms1, 13)
+    b = tpa.find_node_and_query_ms_location_from_node(ms1, 20)
+    tva.find_node_and_move_ms_location_from_node(ms1, 9)
+    tva.find_node_and_move_ms_location_from_node(ms1, 13)
+    c = tva.find_node_and_query_ms_location_from_node(ms1, 20)
     print
     print
     print "PA Search Count = %d" % tpa.get_search_count()
