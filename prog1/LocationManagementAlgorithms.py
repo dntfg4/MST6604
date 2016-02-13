@@ -1,5 +1,5 @@
-'''Location Management: This program contains algorithms determining search and updates
-                        for mobile station movements.
+'''Location Management Algorithms:
+        This program contains algorithms determining search and updates for mobile station movements.
 
 '''
 
