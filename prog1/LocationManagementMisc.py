@@ -9,7 +9,6 @@ __date__ = '$Date: 2016/02/06 12:00:00 $'
 __copyright__ = 'Copyright (c) 2016 James Soehlke and David N. Taylor'
 __license__ = 'Python'
 
-import os
 import subprocess
 from LocationManagementAlgorithms import *
 
@@ -97,8 +96,6 @@ class Tree(object):
             node.add_ms_location(ms, node, self.__algorithm.get_type())
         ms.set_node(node, self.__algorithm.get_type())
 
-        #print node.get_name()
-
         while not node.is_root():
             node_parent = node.get_parent_node()
             if (self.__algorithm.get_type() == VALUE) or (self.__algorithm.get_type() == FORWARDING_V) or (self.__algorithm.get_type() == REPLICATION_V):
@@ -106,7 +103,6 @@ class Tree(object):
             else:
                 node_parent.add_ms_location(ms, node, self.__algorithm.get_type())
             node = node_parent
-            #print node.get_name()
 
         return True
 
@@ -161,12 +157,12 @@ class Tree(object):
         f.write("\n")
         self.draw_nodes(f, self.__root_node, ms1, ms2)
         self.draw_edges(f, self.__root_node)
-        self.draw_search_edges(f, self.__node_search_list)
+        self.draw_search_edges(f, self.__node_search_list, ms1, ms2)
         f.write('}')
         f.close()
 
-        print subprocess.call(oscommand, shell=True)
-        print subprocess.call(pngfilename, shell=True)
+        subprocess.call(oscommand, shell=True)
+        subprocess.call(pngfilename, shell=True)
 
         return
 
@@ -198,13 +194,12 @@ class Tree(object):
             self.draw_edge(f, node)
 
     def draw_edge(self, f, node):
-        #0 -- 1;
         text = str(node.get_parent_node().get_name()) + " -- " + str(node.get_name()) + ";"
         f.write(text)
         f.write("\n")
 
-    def draw_search_edges(self, f, search_list):
-        self.get_algorithm().print_dot_search(f, search_list)
+    def draw_search_edges(self, f, search_list, ms1, ms2):
+        self.get_algorithm().print_dot_search(f, search_list, ms1, ms2)
 
 
 class Node(object):
@@ -274,8 +269,6 @@ class Node(object):
             it = iter(location_list)
             for loc in it:
                 self.__ms_list[l][LOCATION][loc] = None
-            #print self.__ms_list.__len__()
-            #print self.__ms_list
         return
 
     def contains_ms(self, ms):
@@ -292,7 +285,6 @@ class Node(object):
             self.add_ms(ms)
             i = self.find_ms(ms)
             self.__ms_list[i][LOCATION][loc_type] = loc
-            #print self.__ms_list
             return True
         else:
             return self.set_ms_location(ms, loc, loc_type)
@@ -301,7 +293,6 @@ class Node(object):
         i = self.find_ms(ms)
         if i is not None:
             self.__ms_list[i][LOCATION][loc_type] = loc
-            #print self.__ms_list
             return True
 
         return False
@@ -324,7 +315,6 @@ class Node(object):
                     empty = False
             if empty:
                 del self.__ms_list[i]
-                #print self.__ms_list
                 return True
             else:
                 return False
@@ -334,7 +324,6 @@ class Node(object):
         i = self.find_ms(ms)
         if i is not None:
             del self.__ms_list[i]
-            #print self.__ms_list
         return
 
     def set_lcmr(self, lcmr):
@@ -572,10 +561,6 @@ if __name__ == "__main__":
         print "fpp  = %d" % fpp.get_name()
         print "fpv  = %d" % fpv.get_name()
 
-    #os.system("dot -Tpng pointer.dot > pointer.png")
-    #os.system("pointer.png")
-    #os.system("dot -Tpng pointer.dot > pointer1.png")
-    #os.system("pointer1.png")
     tpa.draw_tree(ms1, ms2)
     tva.draw_tree(ms1, ms2)
     tfppa.draw_tree(ms1, ms2)

@@ -140,27 +140,21 @@ class LocationManagemenEntry:
         self.__resultLabel.grid(column = self.__col , row=self.__nextRow(), rowspan = 2,)
 
     def __OnMS1MoveClickEvt(self, evt):
-        print "__OnMS1MoveClickEvt"
         self.__OnMS1MoveClick()
 
     def __OnMS1MoveClick(self):
-        print "__OnMS1MoveClick"
         self.__parent.move_ms1(int(self.__inputs["ms1movetonode"].get()), self.__inputs)
 
     def __OnMS2MoveClickEvt(self, evt):
-        print "__OnMS2MoveClickEvt"
         self.__OnMS2MoveClick()
 
     def __OnMS2MoveClick(self):
-        print "__OnMS2MoveClick"
         self.__parent.move_ms2(int(self.__inputs["ms2movetonode"].get()), self.__inputs)
 
     def __OnMS2CallMS1MoveClickEvt(self, evt):
-        print "__OnMS2CallMS1MoveClickEvt"
         self.__OnMS2CallMS1MoveClick()
 
     def __OnMS2CallMS1MoveClick(self):
-        print "__OnMS2CallMS1MoveClick"
         self.__parent.ms2_call_ms1(self.__inputs)
 
 
@@ -272,7 +266,6 @@ class LocationManagementApp(Tkinter.Tk):
         self.__trva.get_algorithm().set_mins(float(inputs["maxS"].get()))
 
     def move_ms1(self, name, inputs):
-        print "move ms1 to %d" % name
         self.update_trees(inputs)
         if inputs["algo_option"].get() == "Pointer":
             self.__tpa.find_node_and_move_ms_location_from_node(self.__ms1, name)
@@ -288,7 +281,6 @@ class LocationManagementApp(Tkinter.Tk):
             self.__trva.find_node_and_move_ms_location_from_node(self.__ms1, name)
 
     def move_ms2(self, name, inputs):
-        print "move ms2 to %d" % name
         self.update_trees(inputs)
         if inputs["algo_option"].get() == "Pointer":
             self.__tpa.find_node_and_move_ms_location_from_node(self.__ms2, name)
@@ -304,7 +296,6 @@ class LocationManagementApp(Tkinter.Tk):
             self.__trva.find_node_and_move_ms_location_from_node(self.__ms2, name)
 
     def ms2_call_ms1(self, inputs):
-        print "ms2 call ms1"
         if inputs["algo_option"].get() == "Pointer":
             self.__tpa.query_ms_location_from_node(self.__ms1, self.__ms2.get_node(self.__tpa.get_algorithm().get_type()))
             self.__tpa.draw_tree(self.__ms1, self.__ms2)
