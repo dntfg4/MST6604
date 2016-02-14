@@ -12,11 +12,12 @@ __license__ = 'Python'
 from LocationManagementMisc import *
 
 class Algorithm(object):
-    def __init__(self, algorithm_type):
+    def __init__(self, algorithm_type, name=""):
         self.__search_count = 0
         self.__update_count = 0
         self.__tree = None
         self.__type = algorithm_type
+        self.__name = name
         return
 
     def set_search_count(self, value):
@@ -51,6 +52,9 @@ class Algorithm(object):
     def get_type(self):
         return self.__type
 
+    def get_name(self):
+        return self.__name
+
     def find_node_and_query_ms_location_from_node(self, ms, name):
         return
 
@@ -63,10 +67,13 @@ class Algorithm(object):
     def move_ms_to_node(self, ms, node):
         return None
 
+    def print_dot_search(self, f, search_list):
+        return
+
 
 class ValueAlgorithm(Algorithm):
-    def __init__(self, loc_type=VALUE):
-        Algorithm.__init__(self, loc_type)
+    def __init__(self, loc_type=VALUE, name="Actual_Value_Algorithm"):
+        Algorithm.__init__(self, loc_type, name)
         return
 
     def find_node_and_query_ms_location_from_node(self, ms, name):
@@ -127,26 +134,37 @@ class ValueAlgorithm(Algorithm):
 
         while lca is not ms_node:
             ms_node.delete_ms_location(ms, self.get_type())
+            self.get_tree().add_node_update(ms_node)
             ms_node = ms_node.get_parent_node()
             self.increment_update_count()
-            self.get_tree().add_node_update(ms_node)
 
         ms_node = node
 
         while ms_node is not None:
             ms_node_parent = ms_node.get_parent_node()
             ms_node.add_ms_location(ms, node, self.get_type())
+            self.get_tree().add_node_update(ms_node)
             ms_node = ms_node.get_parent_node()
             self.increment_update_count()
-            self.get_tree().add_node_update(ms_node)
 
         ms.set_node(node, self.get_type())
         return
 
+    def print_dot_search(self, f, search_list):
+        if len(search_list) > 1:
+            for i in range(len(search_list)):
+                j = i + 1
+                if j >= len(search_list):
+                    return
+                text = str(search_list[i].get_name()) + " -- " + str(search_list[j].get_name())
+                text = text + "[style=bold,color=red,label=\"S" + str(i) + "\"];"
+                f.write(text)
+                f.write("\n")
+
 
 class PointerAlgorithm(Algorithm):
-    def __init__(self, loc_type=POINTER):
-        Algorithm.__init__(self, loc_type)
+    def __init__(self, loc_type=POINTER, name="Pointer_Algorithm"):
+        Algorithm.__init__(self, loc_type, name)
         return
 
     def find_node_and_query_ms_location_from_node(self, ms, name):
@@ -194,8 +212,8 @@ class PointerAlgorithm(Algorithm):
                 return node
 
             while node is not node.get_ms_location(ms, self.get_type()):
-                self.get_tree().add_node_search(node)
                 node = node.get_ms_location(ms, self.get_type())
+                self.get_tree().add_node_search(node)
                 self.increment_search_count()
 
             return node
@@ -219,9 +237,9 @@ class PointerAlgorithm(Algorithm):
 
         while lca is not ms_node:
             ms_node.delete_ms_location(ms, self.get_type())
+            self.get_tree().add_node_update(ms_node)
             ms_node = ms_node.get_parent_node()
             self.increment_update_count()
-            self.get_tree().add_node_update(ms_node)
 
         ms_node = node
 
@@ -238,14 +256,25 @@ class PointerAlgorithm(Algorithm):
 
         node.add_ms_location(ms, node, self.get_type())
         self.increment_update_count()
-        self.get_tree().add_node_update(ms_node)
+        self.get_tree().add_node_update(node)
         ms.set_node(node, self.get_type())
         return
+
+    def print_dot_search(self, f, search_list):
+        if len(search_list) > 1:
+            for i in range(len(search_list)):
+                j = i + 1
+                if j >= len(search_list):
+                    return
+                text = str(search_list[i].get_name()) + " -- " + str(search_list[j].get_name())
+                text = text + "[style=bold,color=red,label=\"S" + str(i) + "\"];"
+                f.write(text)
+                f.write("\n")
 
 
 class ForwardingPointerPAlgorithm(PointerAlgorithm):
     def __init__(self, max_forwards=2):
-        PointerAlgorithm.__init__(self, FORWARDING_P)
+        PointerAlgorithm.__init__(self, FORWARDING_P, "Forwarding_Algorithm_For_Pointer")
         self.__forwarding_type = FORWARDING_P_FORWARD
         self.__reverse_type = FORWARDING_P_REVERSE
         self.__max_forwards = max_forwards
@@ -470,9 +499,12 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
 
         return node
 
+    def print_dot_search(self, f, search_list):
+        return
+
 class ForwardingPointerVAlgorithm(ValueAlgorithm):
     def __init__(self, max_forwards=2):
-        ValueAlgorithm.__init__(self, FORWARDING_V)
+        ValueAlgorithm.__init__(self, FORWARDING_V, "Forwarding_Algorithm_For_Actual_Value")
         self.__forwarding_type = FORWARDING_P_FORWARD
         self.__reverse_type = FORWARDING_P_REVERSE
         self.__max_forwards = max_forwards
@@ -666,7 +698,7 @@ class ReplicationValues(object):
 
 class ReplicationPointerAlgorithm(PointerAlgorithm, ReplicationValues):
     def __init__(self):
-        PointerAlgorithm.__init__(self, REPLICATION_P)
+        PointerAlgorithm.__init__(self, REPLICATION_P, "Replication_Algorithm_For_Pointer")
         ReplicationValues.__init__(self)
         return
     
@@ -757,10 +789,13 @@ class ReplicationPointerAlgorithm(PointerAlgorithm, ReplicationValues):
                 node = node.get_parent_node()
         print "Rcount is %d" % rcount
 
+    def print_dot_search(self, f, search_list):
+        return
+
 
 class ReplicationValueAlgorithm(ValueAlgorithm, ReplicationValues):
     def __init__(self):
-        ValueAlgorithm.__init__(self, REPLICATION_V)
+        ValueAlgorithm.__init__(self, REPLICATION_V, "Forwarding_Algorithm_For_Actual_Value")
         ReplicationValues.__init__(self)
         return
     
@@ -834,3 +869,6 @@ class ReplicationValueAlgorithm(ValueAlgorithm, ReplicationValues):
                         rcount += 1
                 node = node.get_parent_node()
         print "Rcount is %d" % rcount
+
+    def print_dot_search(self, f, search_list):
+        return

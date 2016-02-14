@@ -9,6 +9,8 @@ __date__ = '$Date: 2016/02/06 12:00:00 $'
 __copyright__ = 'Copyright (c) 2016 James Soehlke and David N. Taylor'
 __license__ = 'Python'
 
+import os
+import subprocess
 from LocationManagementAlgorithms import *
 
 POINTER = "pointer"
@@ -37,6 +39,7 @@ class Tree(object):
             self.__algorithm.set_tree(self)
         self.__node_update_list = []
         self.__node_search_list = []
+        self.__tree_draw_count = 0
         return
 
     def add_node(self, node):
@@ -119,7 +122,7 @@ class Tree(object):
 
     def query_ms_location_from_node(self, ms, node):
         del self.__node_search_list[:]
-        return self.__algorithm.query_ms_location_from_node(self, ms, node)
+        return self.__algorithm.query_ms_location_from_node(ms, node)
 
     def find_node_and_move_ms_location_from_node(self, ms, name):
         del self.__node_update_list[:]
@@ -143,8 +146,65 @@ class Tree(object):
     def has_node_been_updated(self, node):
         return self.__node_update_list.count(node) > 0
 
-    def draw_tree(self):
+    def draw_tree(self, ms1, ms2):
+        self.__tree_draw_count += 1
+        graphtitle = self.get_algorithm().get_name() + "-" + str(self.__tree_draw_count)
+        dotfilename = self.get_algorithm().get_name() + "-" + str(self.__tree_draw_count) + ".dot"
+        pngfilename = self.get_algorithm().get_name() + "-" + str(self.__tree_draw_count) + ".png"
+        oscommand = "dot -Tpng " + dotfilename + " > " + pngfilename
+
+        f = open(dotfilename, 'w')
+        text = "strict graph G{label=\"" + graphtitle + "\\n"
+        text = text + "Search = " + str(self.get_search_count()) + ", "
+        text = text + "Update = " + str(self.get_update_count()) + "\""
+        f.write(text)
+        f.write("\n")
+        self.draw_nodes(f, self.__root_node, ms1, ms2)
+        self.draw_edges(f, self.__root_node)
+        self.draw_search_edges(f, self.__node_search_list)
+        f.write('}')
+        f.close()
+
+        print subprocess.call(oscommand, shell=True)
+        print subprocess.call(pngfilename, shell=True)
+
         return
+
+    def draw_nodes(self, f, node, ms1, ms2):
+        it = node.get_children_nodes()
+        for i in it:
+            self.draw_nodes(f, i, ms1, ms2)
+        self.draw_node(f, node, ms1, ms2)
+
+    def draw_node(self, f, node, ms1, ms2):
+        text = str(node.get_name()) + "[label=\"" + str(node.get_name())
+        if ms1.get_node(self.get_algorithm().get_type()) is node:
+            text = text + "\\nMS" + str(ms1.get_name())
+        elif ms2.get_node(self.get_algorithm().get_type()) is node:
+            text = text + "\\nMS" + str(ms2.get_name())
+        text = text + "\""
+        if self.__node_update_list.count(node) > 0:
+            text = text + ",color = lightblue,style = filled"
+        text = text + "];"
+        f.write(text)
+        f.write("\n")
+
+    def draw_edges(self, f, node):
+        it = node.get_children_nodes()
+        for i in it:
+            self.draw_edges(f, i)
+
+        if not node.is_root():
+            self.draw_edge(f, node)
+
+    def draw_edge(self, f, node):
+        #0 -- 1;
+        text = str(node.get_parent_node().get_name()) + " -- " + str(node.get_name()) + ";"
+        f.write(text)
+        f.write("\n")
+
+    def draw_search_edges(self, f, search_list):
+        self.get_algorithm().print_dot_search(f, search_list)
 
 
 class Node(object):
@@ -308,11 +368,11 @@ class MS(object):
             self.__node_list[node_type] = None
         return
 
-    def set_ms_name(self, name):
+    def set_name(self, name):
         self.__name = name
         return
 
-    def get_ms_name(self):
+    def get_name(self):
         return self.__name
 
     def set_node(self, node, loc_type):
@@ -426,21 +486,21 @@ if __name__ == "__main__":
 
     ms1 = MS(1)
 
-    tpa.put_ms_into_node_name(ms1, 8)
-    tva.put_ms_into_node_name(ms1, 8)
-    tfppa.put_ms_into_node_name(ms1, 8)
-    tfpva.put_ms_into_node_name(ms1, 8)
-    trpa.put_ms_into_node_name(ms1, 8)
-    trva.put_ms_into_node_name(ms1, 8)
+    tpa.put_ms_into_node_name(ms1, 7)
+    tva.put_ms_into_node_name(ms1, 7)
+    tfppa.put_ms_into_node_name(ms1, 7)
+    tfpva.put_ms_into_node_name(ms1, 7)
+    trpa.put_ms_into_node_name(ms1, 7)
+    trva.put_ms_into_node_name(ms1, 7)
 
     ms2 = MS(2)
 
-    tpa.put_ms_into_node_name(ms2, 17)
-    tva.put_ms_into_node_name(ms2, 17)
-    tfppa.put_ms_into_node_name(ms2, 17)
-    tfpva.put_ms_into_node_name(ms2, 17)
-    trpa.put_ms_into_node_name(ms2, 17)
-    trva.put_ms_into_node_name(ms2, 17)
+    tpa.put_ms_into_node_name(ms2, 18)
+    tva.put_ms_into_node_name(ms2, 18)
+    tfppa.put_ms_into_node_name(ms2, 18)
+    tfpva.put_ms_into_node_name(ms2, 18)
+    trpa.put_ms_into_node_name(ms2, 18)
+    trva.put_ms_into_node_name(ms2, 18)
 
     #tpa.find_node_and_move_ms_location_from_node(ms1, 13)
     #print "PA Update Count  = %d" % tpa.get_update_count()
@@ -511,3 +571,11 @@ if __name__ == "__main__":
         print "v    = %d" % v.get_name()
         print "fpp  = %d" % fpp.get_name()
         print "fpv  = %d" % fpv.get_name()
+
+    #os.system("dot -Tpng pointer.dot > pointer.png")
+    #os.system("pointer.png")
+    #os.system("dot -Tpng pointer.dot > pointer1.png")
+    #os.system("pointer1.png")
+    tpa.draw_tree(ms1, ms2)
+    tva.draw_tree(ms1, ms2)
+    tfppa.draw_tree(ms1, ms2)
