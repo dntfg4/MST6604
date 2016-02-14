@@ -1,5 +1,6 @@
 '''Location Management Algorithms:
         This program contains algorithms determining search and updates for mobile station movements.
+
 '''
 
 __author__ = 'James Soehlke and David Taylor'
@@ -66,7 +67,7 @@ class Algorithm(object):
     def move_ms_to_node(self, ms, node):
         return None
 
-    def print_dot_search(self, f, search_list):
+    def print_dot_search(self, f, search_list, ms1, ms2):
         return
 
 
@@ -149,7 +150,7 @@ class ValueAlgorithm(Algorithm):
         ms.set_node(node, self.get_type())
         return
 
-    def print_dot_search(self, f, search_list):
+    def print_dot_search(self, f, search_list, ms1, ms2):
         if len(search_list) > 1:
             for i in range(len(search_list)):
                 j = i + 1
@@ -259,7 +260,7 @@ class PointerAlgorithm(Algorithm):
         ms.set_node(node, self.get_type())
         return
 
-    def print_dot_search(self, f, search_list):
+    def print_dot_search(self, f, search_list, ms1, ms2):
         if len(search_list) > 1:
             for i in range(len(search_list)):
                 j = i + 1
@@ -346,9 +347,9 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
 
             while node is not node.get_ms_location(ms, self.get_type()):
                 next_node = node.get_ms_location(ms, self.__forwarding_type)
-                self.get_tree().add_node_search(next_node)
                 if next_node is None:
                     next_node = node.get_ms_location(ms, self.get_type())
+                self.get_tree().add_node_search(next_node)
                 self.increment_search_count()
                 node = next_node
 
@@ -498,8 +499,25 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
 
         return node
 
-    def print_dot_search(self, f, search_list):
-        return
+    def print_dot_search(self, f, search_list, ms1, ms2):
+        if len(search_list) > 1:
+            for i in range(len(search_list)):
+                j = i + 1
+                if j >= len(search_list):
+                    return
+                text = str(search_list[i].get_name()) + " -- " + str(search_list[j].get_name())
+                if search_list[i].get_ms_location(ms1, FORWARDING_P_FORWARD) is search_list[j]:
+                    text = text + "[style=\"bold,dashed\",color=red,label=\"S" + str(i) + "\"];"
+                    f.write(text)
+                    f.write("\n")
+                elif search_list[i].get_ms_location(ms1, FORWARDING_P) is search_list[j]:
+                    text = text + "[style=bold,color=red,label=\"S" + str(i) + "\"];"
+                    f.write(text)
+                    f.write("\n")
+                elif search_list[i].get_parent_node() is search_list[j]:
+                    text = text + "[style=bold,color=red,label=\"S" + str(i) + "\"];"
+                    f.write(text)
+                    f.write("\n")
 
 class ForwardingPointerVAlgorithm(ValueAlgorithm):
     def __init__(self, max_forwards=2):
@@ -658,6 +676,26 @@ class ForwardingPointerVAlgorithm(ValueAlgorithm):
 
         return
 
+    def print_dot_search(self, f, search_list, ms1, ms2):
+        if len(search_list) > 1:
+            for i in range(len(search_list)):
+                j = i + 1
+                if j >= len(search_list):
+                    return
+                text = str(search_list[i].get_name()) + " -- " + str(search_list[j].get_name())
+                if search_list[i].get_ms_location(ms1, FORWARDING_P_FORWARD) is search_list[j]:
+                    text = text + "[style=\"bold,dashed\",color=red,label=\"S" + str(i) + "\"];"
+                    f.write(text)
+                    f.write("\n")
+                elif search_list[i].get_ms_location(ms1, FORWARDING_V) is search_list[j]:
+                    text = text + "[style=bold,color=red,label=\"S" + str(i) + "\"];"
+                    f.write(text)
+                    f.write("\n")
+                elif search_list[i].get_parent_node() is search_list[j]:
+                    text = text + "[style=bold,color=red,label=\"S" + str(i) + "\"];"
+                    f.write(text)
+                    f.write("\n")
+
 class ReplicationValues(object):
     def __init__(self, n=5, l=1, mins=.6, maxs=1.2):
         self.__n = n
@@ -754,6 +792,7 @@ class ReplicationPointerAlgorithm(PointerAlgorithm, ReplicationValues):
                 node = node.get_ms_location(ms, self.get_type())
                 self.increment_search_count()
 
+            self.get_tree().add_node_search(node)
             return node
 
         return None
@@ -763,8 +802,6 @@ class ReplicationPointerAlgorithm(PointerAlgorithm, ReplicationValues):
         self.perform_replication(ms)
 
     def perform_replication(self, ms):
-        print "pr number of leaf nodes is %d" % len(self.get_tree().get_leaf_nodes())
-        rcount = 0
         it = iter(self.get_tree().get_leaf_nodes())
         for i in it:
             node = i
@@ -776,20 +813,37 @@ class ReplicationPointerAlgorithm(PointerAlgorithm, ReplicationValues):
                         rnode.set_ms_location(ms, None, REPLICATION)
                         if not self.get_tree().has_node_been_updated(rnode):
                             self.increment_update_count()
-                        rcount += 1
+                            self.get_tree().add_node_update(ms_node)
                         if rnode.get_ms_location(ms, REPLICATION_V) is None:
                             rnode.delete_all_ms_locations(ms)
                 else: # for our topology, we at each spot if needed
                     if (rnode is None) or (rnode is not ms.get_node(REPLICATION_V)):
                         node.add_ms_location(ms, ms.get_node(REPLICATION_V), REPLICATION)
+                        self.get_tree().add_node_update(node)
                         if not self.get_tree().has_node_been_updated(rnode):
                             self.increment_update_count()
-                        rcount += 1
+                            self.get_tree().add_node_update(rnode)
                 node = node.get_parent_node()
-        print "Rcount is %d" % rcount
 
-    def print_dot_search(self, f, search_list):
-        return
+    def print_dot_search(self, f, search_list, ms1, ms2):
+        if len(search_list) > 1:
+            for i in range(len(search_list)):
+                j = i + 1
+                if j >= len(search_list):
+                    return
+                text = str(search_list[i].get_name()) + " -- " + str(search_list[j].get_name())
+                if search_list[i].get_ms_location(ms1, REPLICATION) is search_list[j]:
+                    text = text + "[style=\"bold,dashed\",color=red,label=\"S" + str(i) + "\"];"
+                    f.write(text)
+                    f.write("\n")
+                elif search_list[i].get_ms_location(ms1, REPLICATION_P) is search_list[j]:
+                    text = text + "[style=bold,color=red,label=\"S" + str(i) + "\"];"
+                    f.write(text)
+                    f.write("\n")
+                elif search_list[i].get_parent_node() is search_list[j]:
+                    text = text + "[style=bold,color=red,label=\"S" + str(i) + "\"];"
+                    f.write(text)
+                    f.write("\n")
 
 
 class ReplicationValueAlgorithm(ValueAlgorithm, ReplicationValues):
@@ -844,9 +898,7 @@ class ReplicationValueAlgorithm(ValueAlgorithm, ReplicationValues):
         self.perform_replication(ms)
 
     def perform_replication(self, ms):
-        print "pr number of leaf nodes is %d" % len(self.get_tree().get_leaf_nodes())
         it = iter(self.get_tree().get_leaf_nodes())
-        rcount = 0
         for i in it:
             node = i
             while node is not None:
@@ -857,7 +909,6 @@ class ReplicationValueAlgorithm(ValueAlgorithm, ReplicationValues):
                         rnode.set_ms_location(ms, None, REPLICATION)
                         if not self.get_tree().has_node_been_updated(rnode):
                             self.increment_update_count()
-                        rcount += 1
                         if rnode.get_ms_location(ms, REPLICATION_V) is None:
                             rnode.delete_all_ms_locations(ms)
                 else: # for our topology, we at each spot if needed
@@ -865,9 +916,24 @@ class ReplicationValueAlgorithm(ValueAlgorithm, ReplicationValues):
                         node.add_ms_location(ms, ms.get_node(REPLICATION_V), REPLICATION)
                         if not self.get_tree().has_node_been_updated(rnode):
                             self.increment_update_count()
-                        rcount += 1
                 node = node.get_parent_node()
-        print "Rcount is %d" % rcount
 
-    def print_dot_search(self, f, search_list):
-        return
+    def print_dot_search(self, f, search_list, ms1, ms2):
+        if len(search_list) > 1:
+            for i in range(len(search_list)):
+                j = i + 1
+                if j >= len(search_list):
+                    return
+                text = str(search_list[i].get_name()) + " -- " + str(search_list[j].get_name())
+                if search_list[i].get_ms_location(ms1, REPLICATION) is search_list[j]:
+                    text = text + "[style=\"bold,dashed\",color=red,label=\"S" + str(i) + "\"];"
+                    f.write(text)
+                    f.write("\n")
+                elif search_list[i].get_ms_location(ms1, REPLICATION_V) is search_list[j]:
+                    text = text + "[style=bold,color=red,label=\"S" + str(i) + "\"];"
+                    f.write(text)
+                    f.write("\n")
+                elif search_list[i].get_parent_node() is search_list[j]:
+                    text = text + "[style=bold,color=red,label=\"S" + str(i) + "\"];"
+                    f.write(text)
+                    f.write("\n")
