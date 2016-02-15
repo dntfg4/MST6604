@@ -11,7 +11,7 @@ __license__ = 'Python'
 
 import sys
 import Tkinter
-from LocationManagementAlgorithms import *
+from LocationManagementMisc import *
 
 class RSCError(Exception):
     def __init__(self, name, message):
@@ -44,6 +44,7 @@ class LocationManagementLabels:
     def __initialize(self):
         self.__addHeaderLabel()
         self.__addLabel("Algorithm Option")
+        self.__addLabel("Tree Level")
         self.__addLabel("Leaf Node 7 CMR")
         self.__addLabel("Leaf Node 8 CMR")
         self.__addLabel("Leaf Node 9 CMR")
@@ -59,7 +60,6 @@ class LocationManagementLabels:
         self.__addLabel("minS")
         self.__addLabel("maxS")
         self.__addLabel("MS1: Move to Node")
-        self.__addLabel("MS2: Move to Node")
 
 class LocationManagemenEntry:
     def __init__(self, parent, headerName, col, row, setFocus):
@@ -105,34 +105,35 @@ class LocationManagemenEntry:
         self.__header = Tkinter.Label(self.__parent, text = "Values", width = 20)
         self.__header.grid(column = self.__col, row = self.__nextRow(), sticky = "W")
         self.__addDropDownEntry("algo_option", self.__setFocus)
-        self.__addDoubleEntry("node7cmr", .3, self.__setFocus)
-        self.__addDoubleEntry("node8cmr", .3, self.__setFocus)
-        self.__addDoubleEntry("node9cmr", .3, self.__setFocus)
-        self.__addDoubleEntry("node10cmr", .3, self.__setFocus)
-        self.__addDoubleEntry("node11cmr", .3, self.__setFocus)
-        self.__addDoubleEntry("node12cmr", .3, self.__setFocus)
-        self.__addDoubleEntry("node13cmr", .3, self.__setFocus)
-        self.__addDoubleEntry("node14cmr", .3, self.__setFocus)
-        self.__addDoubleEntry("node15cmr", .3, self.__setFocus)
-        self.__addDoubleEntry("node16cmr", .3, self.__setFocus)
-        self.__addDoubleEntry("node17cmr", .3, self.__setFocus)
-        self.__addDoubleEntry("node18cmr", .3, self.__setFocus)
+        self.__addIntEntry("treelevel", 1)
+        self.__addDoubleEntry("node7cmr", 0, self.__setFocus)
+        self.__addDoubleEntry("node8cmr", 0, self.__setFocus)
+        self.__addDoubleEntry("node9cmr", 0, self.__setFocus)
+        self.__addDoubleEntry("node10cmr", 0, self.__setFocus)
+        self.__addDoubleEntry("node11cmr", 0, self.__setFocus)
+        self.__addDoubleEntry("node12cmr", 0, self.__setFocus)
+        self.__addDoubleEntry("node13cmr", 0, self.__setFocus)
+        self.__addDoubleEntry("node14cmr", 0, self.__setFocus)
+        self.__addDoubleEntry("node15cmr", 0, self.__setFocus)
+        self.__addDoubleEntry("node16cmr", 0, self.__setFocus)
+        self.__addDoubleEntry("node17cmr", 0, self.__setFocus)
+        self.__addDoubleEntry("node18cmr", 0, self.__setFocus)
         self.__addDoubleEntry("minS", .6, self.__setFocus)
         self.__addDoubleEntry("maxS", 1.2, self.__setFocus)
         self.__addIntEntry("ms1movetonode", 7)
-        self.__addIntEntry("ms2movetonode", 18)
+        #self.__addIntEntry("ms2movetonode", 18)
 
-        self.__calcButton = Tkinter.Button(self.__parent,text="Move MS1", command=self.__OnMS1MoveClick)
-        self.__calcButton.grid(column=self.__col, row=self.__nextRow())
-        self.__calcButton.bind("<Return>", self.__OnMS1MoveClickEvt)
+        self.__lmaButton = Tkinter.Button(self.__parent,text="Move MS1", command=self.__OnMS1MoveClick)
+        self.__lmaButton.grid(column=self.__col, row=self.__nextRow())
+        self.__lmaButton.bind("<Return>", self.__OnMS1MoveClickEvt)
 
-        self.__calcButton = Tkinter.Button(self.__parent,text="Move MS2", command=self.__OnMS2MoveClick)
-        self.__calcButton.grid(column=self.__col, row=self.__nextRow())
-        self.__calcButton.bind("<Return>", self.__OnMS2MoveClickEvt)
-
-        self.__calcButton = Tkinter.Button(self.__parent,text="MS2 Call MS1", command=self.__OnMS2CallMS1MoveClick)
-        self.__calcButton.grid(column=self.__col, row=self.__nextRow())
-        self.__calcButton.bind("<Return>", self.__OnMS2CallMS1MoveClickEvt)
+        self.__lmaButton = Tkinter.Button(self.__parent,text="MS2 Call MS1", command=self.__OnMS2CallMS1MoveClick)
+        self.__lmaButton.grid(column=self.__col, row=self.__nextRow())
+        self.__lmaButton.bind("<Return>", self.__OnMS2CallMS1MoveClickEvt)
+        
+        self.__lmaButton = Tkinter.Button(self.__parent,text="Reset Tree", command=self.__OnResetTreeClick)
+        self.__lmaButton.grid(column=self.__col, row=self.__nextRow())
+        self.__lmaButton.bind("<Return>", self.__OnResetTreeClickEvt)
 
         self.__resultVar = Tkinter.StringVar()
         self.__resultVar.set("")
@@ -145,11 +146,11 @@ class LocationManagemenEntry:
     def __OnMS1MoveClick(self):
         self.__parent.move_ms1(int(self.__inputs["ms1movetonode"].get()), self.__inputs)
 
-    def __OnMS2MoveClickEvt(self, evt):
-        self.__OnMS2MoveClick()
+    def __OnResetTreeClickEvt(self, evt):
+        self.__OnResetTreeClick()
 
-    def __OnMS2MoveClick(self):
-        self.__parent.move_ms2(int(self.__inputs["ms2movetonode"].get()), self.__inputs)
+    def __OnResetTreeClick(self):
+        self.__parent.reset_trees()
 
     def __OnMS2CallMS1MoveClickEvt(self, evt):
         self.__OnMS2CallMS1MoveClick()
@@ -162,6 +163,61 @@ class LocationManagementApp(Tkinter.Tk):
     def __init__(self,parent):
         Tkinter.Tk.__init__(self,parent)
         self.__parent = parent
+        self.__tpa = None
+        self.__tfppa = None
+        self.__tva = None
+        self.__tfpva = None
+        self.__trva = None
+        self.__trpa = None
+        self.__ms1 = None
+        self.__ms2 = None
+        self.__initialize()
+
+    def __initialize(self):
+        self.grid()
+
+        self.reset_trees()
+
+        self.__numLMA = Tkinter.IntVar()
+        self.__numLMA.set(1)
+        self.__NumCalcsOnPressEnter()
+
+        self.resizable(False, False)
+        self.columnconfigure(0, minsize = 250, weight=1)
+        self.update()
+
+    def __NumCalcsOnPressEnter(self):
+        try:
+            if self.__numLMA.get() > 0:
+                self.__lmaNames = {}
+                for i in range(self.__numLMA.get()):
+                    self.__lmaNames[i] = {}
+                    self.__lmaNames[i][0] = Tkinter.Label(self, text = "Calculator " + str(i+1) + " Name",
+                                                          anchor = "w", fg = "white", bg = "blue")
+                    self.__lmaNames[i][0].grid(column = 0 , row = i, columnspan = 2, sticky = 'EW')
+                    self.__lmaNames[i][1] = {}
+                    self.__lmaNames[i][1][0] = Tkinter.StringVar()
+                    self.__lmaNames[i][1][0].set("Values")
+                    self.__lmaNames[i][1][1] = Tkinter.Entry(self, textvariable = self.__lmaNames[i][1][0], width = 20)
+                    self.__lmaNames[i][1][1].grid(column = 1, row = i, sticky = 'EW')
+
+                self.____addLMA()
+
+        except:
+            self.__numLMA.set(1)
+
+    def ____addLMA(self):
+        for i in range(self.__numLMA.get()):
+            self.__lmaNames[i][0].grid_forget()
+            self.__lmaNames[i][1][1].grid_forget()
+
+        self.__labels = LocationManagementLabels(self)
+        self.__calcs = []
+        self.__lmaNames[i][1][0].set("")
+        self.__calcs.append(LocationManagemenEntry(self, self.__lmaNames[0][1][0].get(), i+2, -1, i==0))
+        self.update()
+
+    def reset_trees(self):
         self.__tpa = Tree(PointerAlgorithm())
         self.__tfppa = Tree(ForwardingPointerPAlgorithm())
         self.__tva = Tree(ValueAlgorithm())
@@ -170,10 +226,6 @@ class LocationManagementApp(Tkinter.Tk):
         self.__trpa = Tree(ReplicationPointerAlgorithm())
         self.__ms1 = MS(1)
         self.__ms2 = MS(2)
-        self.__initialize()
-
-    def __initialize(self):
-        self.grid()
 
         fill_tree(self.__tpa)
         fill_tree(self.__tva)
@@ -195,45 +247,6 @@ class LocationManagementApp(Tkinter.Tk):
         self.__tfpva.put_ms_into_node_name(self.__ms2, 18)
         self.__trpa.put_ms_into_node_name(self.__ms2, 18)
         self.__trva.put_ms_into_node_name(self.__ms2, 18)
-
-        self.__numCalcs = Tkinter.IntVar()
-        self.__numCalcs.set(1)
-        self.__NumCalcsOnPressEnter()
-
-        self.resizable(False, False)
-        self.columnconfigure(0, minsize = 250, weight=1)
-        self.update()
-
-    def __NumCalcsOnPressEnter(self):
-        try:
-            if self.__numCalcs.get() > 0:
-                self.__calcNames = {}
-                for i in range(self.__numCalcs.get()):
-                   self.__calcNames[i] = {}
-                   self.__calcNames[i][0] = Tkinter.Label(self, text = "Calculator " + str(i+1) + " Name",
-                                                          anchor = "w", fg = "white", bg = "blue")
-                   self.__calcNames[i][0].grid(column = 0 , row = i, columnspan = 2, sticky = 'EW')
-                   self.__calcNames[i][1] = {}
-                   self.__calcNames[i][1][0] = Tkinter.StringVar()
-                   self.__calcNames[i][1][0].set("Values")
-                   self.__calcNames[i][1][1] = Tkinter.Entry(self, textvariable = self.__calcNames[i][1][0], width = 20)
-                   self.__calcNames[i][1][1].grid(column = 1, row = i, sticky = 'EW')
-
-                self.__addCalculators()
-
-        except:
-            self.__numCalcs.set(1)
-
-    def __addCalculators(self):
-        for i in range(self.__numCalcs.get()):
-            self.__calcNames[i][0].grid_forget()
-            self.__calcNames[i][1][1].grid_forget()
-
-        self.__labels = LocationManagementLabels(self)
-        self.__calcs = []
-        self.__calcNames[i][1][0].set("")
-        self.__calcs.append(LocationManagemenEntry(self, self.__calcNames[0][1][0].get(), i+2, -1, i==0))
-        self.update()
 
     def update_trees(self, inputs):
         self.__trpa.get_node(7).set_lcmr(float(inputs["node7cmr"].get()))
@@ -272,6 +285,7 @@ class LocationManagementApp(Tkinter.Tk):
         elif inputs["algo_option"].get() == "Actual":
             self.__tva.find_node_and_move_ms_location_from_node(self.__ms1, name)
         elif inputs["algo_option"].get() == "FPPointer":
+            self.__tfppa.get_algorithm().set_forwarding_level(int(inputs["treelevel"].get()))
             self.__tfppa.find_node_and_move_ms_location_from_node(self.__ms1, name)
         elif inputs["algo_option"].get() == "FPActual":
             self.__tfpva.find_node_and_move_ms_location_from_node(self.__ms1, name)

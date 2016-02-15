@@ -10,19 +10,8 @@ __copyright__ = 'Copyright (c) 2016 James Soehlke and David N. Taylor'
 __license__ = 'Python'
 
 import subprocess
+from LocationManagementConstants import *
 from LocationManagementAlgorithms import *
-
-POINTER = "pointer"
-VALUE = "value"
-FORWARDING_P = "forwarding_p"
-FORWARDING_V = "forwarding_v"
-FORWARDING_P_FORWARD = "forwarding_p_forward"
-FORWARDING_P_REVERSE = "forwarding_p_reverse"
-MOBILE_STATION = "mobile station"
-LOCATION = "location"
-REPLICATION = "replication"
-REPLICATION_P = "replication_p"
-REPLICATION_V = "replication_v"
 
 algorithm_list = [POINTER, VALUE, FORWARDING_P, FORWARDING_V, REPLICATION_P, REPLICATION_V]
 location_list = [FORWARDING_P_FORWARD, FORWARDING_P_REVERSE, REPLICATION]
@@ -38,6 +27,7 @@ class Tree(object):
             self.__algorithm.set_tree(self)
         self.__node_update_list = []
         self.__node_search_list = []
+        self.__forwarding_list = []
         self.__tree_draw_count = 0
         return
 
@@ -136,17 +126,23 @@ class Tree(object):
             self.__node_search_list.append(node)
 
     def add_node_update(self, node):
-        if not self.has_node_been_updated(node):
+        if self.__node_update_list.count(node) == 0:
             self.__node_update_list.append(node)
 
-    def has_node_been_updated(self, node):
-        return self.__node_update_list.count(node) > 0
+    def add_forwarding_update(self, node):
+        if self.__forwarding_list.count(node) == 0:
+            self.__forwarding_list.append(node)
+
+    def delete_forwarding_update(self, node):
+        if self.__forwarding_list.count(node) > 0:
+            self.__forwarding_list.remove(node)
 
     def draw_tree(self, ms1, ms2):
         self.__tree_draw_count += 1
+        directoryname = "dot\\"
         graphtitle = self.get_algorithm().get_name() + "-" + str(self.__tree_draw_count)
-        dotfilename = self.get_algorithm().get_name() + "-" + str(self.__tree_draw_count) + ".dot"
-        pngfilename = self.get_algorithm().get_name() + "-" + str(self.__tree_draw_count) + ".png"
+        dotfilename = directoryname + self.get_algorithm().get_name() + "-" + str(self.__tree_draw_count) + ".dot"
+        pngfilename = directoryname + self.get_algorithm().get_name() + "-" + str(self.__tree_draw_count) + ".png"
         oscommand = "dot -Tpng " + dotfilename + " > " + pngfilename
 
         f = open(dotfilename, 'w')
@@ -157,6 +153,7 @@ class Tree(object):
         f.write("\n")
         self.draw_nodes(f, self.__root_node, ms1, ms2)
         self.draw_edges(f, self.__root_node)
+        self.draw_update(f, self.__forwarding_list, ms1, ms2)
         self.draw_search_edges(f, self.__node_search_list, ms1, ms2)
         f.write('}')
         f.close()
@@ -201,6 +198,8 @@ class Tree(object):
     def draw_search_edges(self, f, search_list, ms1, ms2):
         self.get_algorithm().print_dot_search(f, search_list, ms1, ms2)
 
+    def draw_update(self, f, forwarding_list, ms1, ms2):
+        self.get_algorithm().print_dot_forwarding(f, forwarding_list, ms1, ms2)
 
 class Node(object):
     def __init__(self, name):

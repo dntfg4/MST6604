@@ -9,6 +9,7 @@ __date__ = '$Date: 2016/02/06 12:00:00 $'
 __copyright__ = 'Copyright (c) 2016 James Soehlke and David N. Taylor'
 __license__ = 'Python'
 
+from LocationManagementConstants import *
 from LocationManagementMisc import *
 
 class Algorithm(object):
@@ -56,7 +57,7 @@ class Algorithm(object):
         return self.__name
 
     def find_node_and_query_ms_location_from_node(self, ms, name):
-        return
+        pass
 
     def query_ms_location_from_node(self, ms, node):
         return None
@@ -68,6 +69,9 @@ class Algorithm(object):
         return None
 
     def print_dot_search(self, f, search_list, ms1, ms2):
+        return
+
+    def print_dot_forwarding(self, f, search_list, ms1, ms2):
         return
 
 
@@ -160,7 +164,6 @@ class ValueAlgorithm(Algorithm):
                 text = text + "[style=bold,color=red,label=\"S" + str(i) + "\"];"
                 f.write(text)
                 f.write("\n")
-
 
 class PointerAlgorithm(Algorithm):
     def __init__(self, loc_type=POINTER, name="Pointer_Algorithm"):
@@ -278,6 +281,7 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
         self.__forwarding_type = FORWARDING_P_FORWARD
         self.__reverse_type = FORWARDING_P_REVERSE
         self.__max_forwards = max_forwards
+        self.__forwarding_level = 0
         return
 
     def set_max_forwards(self, max_forwards):
@@ -303,6 +307,7 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
             ms_node.delete_all_ms_locations(ms)
             self.increment_update_count()
             self.get_tree().add_node_update(prev_node)
+            self.get_tree().delete_forwarding_update(ms_node)
             ms_node = prev_node
         return
 
@@ -331,9 +336,7 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
 
             while (not found) and (node is not None):
                 self.get_tree().add_node_search(node)
-                if node.find_ms(ms, self.__forwarding_type) is not None:
-                    found = True
-                if (node.find_ms(ms, self.get_type()) is not None) and (node.find_ms(ms, self.__reverse_type) is None):
+                if (node.find_ms(ms, self.__forwarding_type) is not None) or (node.find_ms(ms, self.get_type()) is not None):
                     found = True
                 else:
                     node = node.get_parent_node()
@@ -346,9 +349,9 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
                 return node
 
             while node is not node.get_ms_location(ms, self.get_type()):
-                next_node = node.get_ms_location(ms, self.__forwarding_type)
+                next_node = node.get_ms_location(ms, self.get_type())
                 if next_node is None:
-                    next_node = node.get_ms_location(ms, self.get_type())
+                    next_node = node.get_ms_location(ms, self.__forwarding_type)
                 self.get_tree().add_node_search(next_node)
                 self.increment_search_count()
                 node = next_node
@@ -406,49 +409,51 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
                 next_node = ms_node.get_parent_node()
 
             ms_node.delete_all_ms_locations(ms)
-
-            ms_node = next_node
+            self.get_tree().add_node_update(ms_node)
             self.increment_update_count()
+            ms_node = next_node
 
         ms_node = node
 
         while (level_node is not ms_node) and (level_node is not ms_node.get_parent_node()):
             ms_node_parent = ms_node.get_parent_node()
+            ms_node_parent.delete_all_ms_locations(ms)
             ms_node_parent.add_ms_location(ms, ms_node, self.get_type())
             ms_node = ms_node_parent
             self.increment_update_count()
             self.get_tree().add_node_update(ms_node_parent)
 
-        if level_node_ms is level_node:
-            level_node_ms.set_ms_location(ms, ms_node, self.get_type())
-            self.increment_update_count()
-            self.get_tree().add_node_update(level_node_ms)
+        level_node.delete_all_ms_locations(ms)
+        level_node.add_ms_location(ms, ms_node, self.get_type())
+        self.increment_update_count()
+        self.get_tree().add_node_update(level_node)
 
-            if level_node_ms is not ms_node:
-                node.add_ms_location(ms, node, self.get_type())
-                self.increment_update_count()
-                self.get_tree().add_node_update(node)
-        else:
-            if level_node_ms.get_ms_location(ms, self.__reverse_type) is None:
-                level_node_ms.delete_all_ms_locations(ms)
+        if level_node_ms is not level_node:
             level_node_ms.add_ms_location(ms, level_node, self.__forwarding_type)
-            level_node_ms.set_ms_location(ms, level_node, self.get_type())
+            level_node_ms.set_ms_location(ms, None, self.get_type())
+            self.get_tree().add_forwarding_update(level_node_ms)
             self.increment_update_count()
             self.get_tree().add_node_update(level_node_ms)
-            level_node.delete_all_ms_locations(ms)
             level_node.add_ms_location(ms, level_node_ms, self.__reverse_type)
-            level_node.set_ms_location(ms, node, self.get_type())
-            self.increment_update_count()
-            self.get_tree().add_node_update(level_node)
+
+            node.delete_all_ms_locations(ms)
             node.add_ms_location(ms, node, self.get_type())
             self.increment_update_count()
             self.get_tree().add_node_update(node)
 
+        node.delete_all_ms_locations(ms)
+        node.add_ms_location(ms, node, self.get_type())
+        self.increment_update_count()
+        self.get_tree().add_node_update(node)
         ms.set_node(node, self.get_type())
         return
 
     def determine_forwarding_level_up(self, ms):
-        return 1
+        return self.__forwarding_level
+
+    def set_forwarding_level(self, level):
+        self.__forwarding_level = level
+        return
 
     def get_node_level_distance(self, ms, node2):
         distance = 0
@@ -456,7 +461,7 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
         node1 = ms.get_node(self.get_type())
 
         while node1 is not node2:
-            if node1.get_ms_location(ms, self.get_type()) is not None:
+            if (node1.get_ms_location(ms, self.get_type()) is not None) or (node1.get_ms_location(ms, self.__forwarding_type)):
                 node1 = node1.get_parent_node()
                 distance += 1
             else:
@@ -519,6 +524,20 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
                     f.write(text)
                     f.write("\n")
 
+    def print_dot_forwarding(self, f, forwarding_list, ms1, ms2):
+        for i in range(len(forwarding_list)):
+            if forwarding_list[i].get_ms_location(ms1,self.__forwarding_type):
+                text = str(forwarding_list[i].get_name()) + " -- " + str(forwarding_list[i].get_ms_location(ms1,self.__forwarding_type).get_name())
+                text = text + "[style=\"bold,dashed\",color=blue,label=\"F" + "\"];"
+                f.write(text)
+                f.write("\n")
+
+            if forwarding_list[i].get_ms_location(ms2,self.__forwarding_type):
+                text = str(forwarding_list[i].get_name()) + " -- " + str(forwarding_list[i].get_ms_location(ms2,self.__forwarding_type).get_name())
+                text = text + "[style=\"bold,dashed\",color=blue,label=\"F" + "\"];"
+                f.write(text)
+                f.write("\n")
+
 class ForwardingPointerVAlgorithm(ValueAlgorithm):
     def __init__(self, max_forwards=2):
         ValueAlgorithm.__init__(self, FORWARDING_V, "Forwarding_Algorithm_For_Actual_Value")
@@ -547,6 +566,7 @@ class ForwardingPointerVAlgorithm(ValueAlgorithm):
                 ms_node = ms_node.get_parent_node()
                 self.increment_update_count()
                 self.get_tree().add_node_update(ms_node)
+                self.get_tree().delete_forwarding_update(ms_node)
             ms_node = prev_node
         ms.set_node(ms_node,self.get_type())
         return
@@ -628,6 +648,7 @@ class ForwardingPointerVAlgorithm(ValueAlgorithm):
         if ms_node.get_ms_location(ms, self.get_type()) is None:
             node.set_ms_location(ms, None, self.__forwarding_type)
             node.set_ms_location(ms, node, self.get_type())
+            self.get_tree().delete_forwarding_update(node)
             self.increment_update_count()
             self.get_tree().add_node_update(node)
             ms.set_node(node, self.get_type())
@@ -635,6 +656,7 @@ class ForwardingPointerVAlgorithm(ValueAlgorithm):
 
         ms_node.set_ms_location(ms, node, self.get_type())
         ms_node.set_ms_location(ms, node, self.__forwarding_type)
+        self.get_tree().add_forwarding_update(ms_node)
         self.increment_update_count()
         self.get_tree().add_node_update(ms_node)
         node.add_ms_location(ms, node, self.get_type())
@@ -695,6 +717,20 @@ class ForwardingPointerVAlgorithm(ValueAlgorithm):
                     text = text + "[style=bold,color=red,label=\"S" + str(i) + "\"];"
                     f.write(text)
                     f.write("\n")
+
+    def print_dot_forwarding(self, f, forwarding_list, ms1, ms2):
+        for i in range(len(forwarding_list)):
+            if forwarding_list[i].get_ms_location(ms1,self.__forwarding_type):
+                text = str(forwarding_list[i].get_name()) + " -- " + str(forwarding_list[i].get_ms_location(ms1,self.__forwarding_type).get_name())
+                text = text + "[style=\"bold,dashed\",color=blue,label=\"F" + "\"];"
+                f.write(text)
+                f.write("\n")
+
+            if forwarding_list[i].get_ms_location(ms2,self.__forwarding_type):
+                text = str(forwarding_list[i].get_name()) + " -- " + str(forwarding_list[i].get_ms_location(ms2,self.__forwarding_type).get_name())
+                text = text + "[style=\"bold,dashed\",color=blue,label=\"F" + "\"];"
+                f.write(text)
+                f.write("\n")
 
 class ReplicationValues(object):
     def __init__(self, n=5, l=1, mins=.6, maxs=1.2):
