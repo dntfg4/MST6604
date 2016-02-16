@@ -13,6 +13,11 @@ import sys
 import Tkinter
 from LocationManagementMisc import *
 
+##################################################################################
+#
+#  Class Description: This is exception class
+#
+##################################################################################
 class RSCError(Exception):
     def __init__(self, name, message):
         self.name = name
@@ -21,6 +26,11 @@ class RSCError(Exception):
     def __str__(self):
         return repr(self.name)
 
+##################################################################################
+#
+#  Class Description: This is the class of the labels on the GUI
+#
+##################################################################################
 class LocationManagementLabels:
     def __init__(self, parent, col=0, row=-1):
         self.__labels = {}
@@ -29,18 +39,38 @@ class LocationManagementLabels:
         self.__parent = parent
         self.__initialize()
 
+    ##################################################################################
+    #
+    #  Description: Returns the next row
+    #
+    ##################################################################################
     def __nextRow(self):
         self.__row += 1
         return self.__row
 
+    ##################################################################################
+    #
+    #  Description: Add a header label
+    #
+    ##################################################################################
     def __addHeaderLabel(self):
         self.__header = Tkinter.Label(self.__parent, text = "Labels")
         self.__header.grid(column = self.__col, row = self.__nextRow(),  columnspan=2, sticky='EW')
 
+    ##################################################################################
+    #
+    #  Description: Adds a label
+    #
+    ##################################################################################
     def __addLabel(self, labelText):
         self.__labels[labelText] = Tkinter.Label(self.__parent,text=labelText, anchor="w",fg="white", bg="blue")
         self.__labels[labelText].grid(column=self.__col, row=self.__nextRow(), columnspan=2, sticky='EW')
 
+    ##################################################################################
+    #
+    #  Description: Initializes the labels
+    #
+    ##################################################################################
     def __initialize(self):
         self.__addHeaderLabel()
         self.__addLabel("Algorithm Option")
@@ -61,6 +91,12 @@ class LocationManagementLabels:
         self.__addLabel("maxS")
         self.__addLabel("MS1: Move to Node")
 
+
+##################################################################################
+#
+#  Class Description: This is the class for GUI entry values
+#
+##################################################################################
 class LocationManagemenEntry:
     def __init__(self, parent, headerName, col, row, setFocus):
         self.__inputs = {}
@@ -72,17 +108,32 @@ class LocationManagemenEntry:
         self.__headerName = "Labels"
         self.__initialize()
 
+    ##################################################################################
+    #
+    #  Description: returns the next row
+    #
+    ##################################################################################
     def __nextRow(self):
         self.__row += 1
         return self.__row
 
+    ##################################################################################
+    #
+    #  Description: Adds a drop down object
+    #
+    ##################################################################################
     def __addDropDownEntry(self, varName, setFocus=False):
         self.__inputs[varName] = Tkinter.StringVar()
         self.__inputs[varName].set("Pointer")
-        self.__entries[varName] = Tkinter.OptionMenu(self.__parent,self.__inputs[varName], 'Pointer','Actual','FPPointer', 'FPActual', 'RPointer', 'RActual')
+        #'Pointer','Actual','FPPointer', 'FPActual', 'RPointer', 'RActual'
+        self.__entries[varName] = Tkinter.OptionMenu(self.__parent,self.__inputs[varName], 'Pointer','Actual','FPPointer', 'RActual')
         self.__entries[varName].grid(column = self.__col, row = self.__nextRow(), sticky='EW')
-        #self.__entries[varName].pack()
 
+    ##################################################################################
+    #
+    #  Description: Adds a double entry
+    #
+    ##################################################################################
     def __addDoubleEntry(self, varName, initValue=0, setFocus=False):
         self.__inputs[varName] = Tkinter.StringVar()
         self.__inputs[varName].set(format(initValue,".2f"))
@@ -92,6 +143,11 @@ class LocationManagemenEntry:
             self.__entries[varName].focus_set()
             self.__entries[varName].selection_range(0, Tkinter.END)
 
+    ##################################################################################
+    #
+    #  Description: Adds a Int entry
+    #
+    ##################################################################################
     def __addIntEntry(self, varName, initValue=0, setFocus=False):
         self.__inputs[varName] = Tkinter.StringVar()
         self.__inputs[varName].set(initValue)
@@ -101,23 +157,28 @@ class LocationManagemenEntry:
             self.__entries[varName].focus_set()
             self.__entries[varName].selection_range(0, Tkinter.END)
 
+    ##################################################################################
+    #
+    #  Description: Initializes the GUI entries
+    #
+    ##################################################################################
     def __initialize(self):
         self.__header = Tkinter.Label(self.__parent, text = "Values", width = 20)
         self.__header.grid(column = self.__col, row = self.__nextRow(), sticky = "W")
         self.__addDropDownEntry("algo_option", self.__setFocus)
         self.__addIntEntry("treelevel", 1)
-        self.__addDoubleEntry("node7cmr", 0, self.__setFocus)
-        self.__addDoubleEntry("node8cmr", 0, self.__setFocus)
-        self.__addDoubleEntry("node9cmr", 0, self.__setFocus)
-        self.__addDoubleEntry("node10cmr", 0, self.__setFocus)
-        self.__addDoubleEntry("node11cmr", 0, self.__setFocus)
-        self.__addDoubleEntry("node12cmr", 0, self.__setFocus)
-        self.__addDoubleEntry("node13cmr", 0, self.__setFocus)
-        self.__addDoubleEntry("node14cmr", 0, self.__setFocus)
-        self.__addDoubleEntry("node15cmr", 0, self.__setFocus)
-        self.__addDoubleEntry("node16cmr", 0, self.__setFocus)
-        self.__addDoubleEntry("node17cmr", 0, self.__setFocus)
-        self.__addDoubleEntry("node18cmr", 0, self.__setFocus)
+        self.__addDoubleEntry("node7cmr", 0.3, self.__setFocus)
+        self.__addDoubleEntry("node8cmr", 0.3, self.__setFocus)
+        self.__addDoubleEntry("node9cmr", 0.3, self.__setFocus)
+        self.__addDoubleEntry("node10cmr", 0.3, self.__setFocus)
+        self.__addDoubleEntry("node11cmr", 0.3, self.__setFocus)
+        self.__addDoubleEntry("node12cmr", 0.3, self.__setFocus)
+        self.__addDoubleEntry("node13cmr", 0.3, self.__setFocus)
+        self.__addDoubleEntry("node14cmr", 0.3, self.__setFocus)
+        self.__addDoubleEntry("node15cmr", 0.3, self.__setFocus)
+        self.__addDoubleEntry("node16cmr", 0.3, self.__setFocus)
+        self.__addDoubleEntry("node17cmr", 0.3, self.__setFocus)
+        self.__addDoubleEntry("node18cmr", 0.3, self.__setFocus)
         self.__addDoubleEntry("minS", .6, self.__setFocus)
         self.__addDoubleEntry("maxS", 1.2, self.__setFocus)
         self.__addIntEntry("ms1movetonode", 7)
@@ -130,8 +191,12 @@ class LocationManagemenEntry:
         self.__lmaButton = Tkinter.Button(self.__parent,text="MS2 Call MS1", command=self.__OnMS2CallMS1MoveClick)
         self.__lmaButton.grid(column=self.__col, row=self.__nextRow())
         self.__lmaButton.bind("<Return>", self.__OnMS2CallMS1MoveClickEvt)
+
+        self.__lmaButton = Tkinter.Button(self.__parent,text="Draw Tree", command=self.__OnDrawTreeClick)
+        self.__lmaButton.grid(column=self.__col, row=self.__nextRow())
+        self.__lmaButton.bind("<Return>", self.__OnDrawTreeClickEvt)
         
-        self.__lmaButton = Tkinter.Button(self.__parent,text="Reset Tree", command=self.__OnResetTreeClick)
+        self.__lmaButton = Tkinter.Button(self.__parent,text="Reset Trees", command=self.__OnResetTreeClick)
         self.__lmaButton.grid(column=self.__col, row=self.__nextRow())
         self.__lmaButton.bind("<Return>", self.__OnResetTreeClickEvt)
 
@@ -140,25 +205,76 @@ class LocationManagemenEntry:
         self.__resultLabel = Tkinter.Label(self.__parent, textvariable = self.__resultVar, width = 20)
         self.__resultLabel.grid(column = self.__col , row=self.__nextRow(), rowspan = 2,)
 
+    ##################################################################################
+    #
+    #  Description: Move ms1 click event
+    #
+    ##################################################################################
     def __OnMS1MoveClickEvt(self, evt):
         self.__OnMS1MoveClick()
 
+    ##################################################################################
+    #
+    #  Description: Move ms1 click
+    #
+    ##################################################################################
     def __OnMS1MoveClick(self):
         self.__parent.move_ms1(int(self.__inputs["ms1movetonode"].get()), self.__inputs)
 
+    ##################################################################################
+    #
+    #  Description: Reset trees button evt
+    #
+    ##################################################################################
     def __OnResetTreeClickEvt(self, evt):
         self.__OnResetTreeClick()
 
+    ##################################################################################
+    #
+    #  Description: Reset tree button press
+    #
+    ##################################################################################
     def __OnResetTreeClick(self):
         self.__parent.reset_trees()
 
+    ##################################################################################
+    #
+    #  Description: Draw tree evt
+    #
+    ##################################################################################
+    def __OnDrawTreeClickEvt(self, evt):
+        self.__OnDrawTreeClick()
+
+    ##################################################################################
+    #
+    #  Description: Draw tree button press
+    #
+    ##################################################################################
+    def __OnDrawTreeClick(self):
+        self.__parent.draw_tree(self.__inputs)
+
+    ##################################################################################
+    #
+    #  Description: ms2 call ms1 button evt
+    #
+    ##################################################################################
     def __OnMS2CallMS1MoveClickEvt(self, evt):
         self.__OnMS2CallMS1MoveClick()
 
+    ##################################################################################
+    #
+    #  Description: ms2 call ms1 button press
+    #
+    ##################################################################################
     def __OnMS2CallMS1MoveClick(self):
         self.__parent.ms2_call_ms1(self.__inputs)
 
 
+##################################################################################
+#
+#  Class Description: This is the class for the main GUI application
+#
+##################################################################################
 class LocationManagementApp(Tkinter.Tk):
     def __init__(self,parent):
         Tkinter.Tk.__init__(self,parent)
@@ -173,6 +289,11 @@ class LocationManagementApp(Tkinter.Tk):
         self.__ms2 = None
         self.__initialize()
 
+    ##################################################################################
+    #
+    #  Description: Initializes
+    #
+    ##################################################################################
     def __initialize(self):
         self.grid()
 
@@ -180,19 +301,24 @@ class LocationManagementApp(Tkinter.Tk):
 
         self.__numLMA = Tkinter.IntVar()
         self.__numLMA.set(1)
-        self.__NumCalcsOnPressEnter()
+        self.__NumLMAsOnPressEnter()
 
         self.resizable(False, False)
         self.columnconfigure(0, minsize = 250, weight=1)
         self.update()
 
-    def __NumCalcsOnPressEnter(self):
+    ##################################################################################
+    #
+    #  Description: Number of LMAs
+    #
+    ##################################################################################
+    def __NumLMAsOnPressEnter(self):
         try:
             if self.__numLMA.get() > 0:
                 self.__lmaNames = {}
                 for i in range(self.__numLMA.get()):
                     self.__lmaNames[i] = {}
-                    self.__lmaNames[i][0] = Tkinter.Label(self, text = "Calculator " + str(i+1) + " Name",
+                    self.__lmaNames[i][0] = Tkinter.Label(self, text = "LMA " + str(i+1) + " Name",
                                                           anchor = "w", fg = "white", bg = "blue")
                     self.__lmaNames[i][0].grid(column = 0 , row = i, columnspan = 2, sticky = 'EW')
                     self.__lmaNames[i][1] = {}
@@ -206,17 +332,27 @@ class LocationManagementApp(Tkinter.Tk):
         except:
             self.__numLMA.set(1)
 
+    ##################################################################################
+    #
+    #  Description: adds an lma
+    #
+    ##################################################################################
     def ____addLMA(self):
         for i in range(self.__numLMA.get()):
             self.__lmaNames[i][0].grid_forget()
             self.__lmaNames[i][1][1].grid_forget()
 
         self.__labels = LocationManagementLabels(self)
-        self.__calcs = []
+        self.__lmas = []
         self.__lmaNames[i][1][0].set("")
-        self.__calcs.append(LocationManagemenEntry(self, self.__lmaNames[0][1][0].get(), i+2, -1, i==0))
+        self.__lmas.append(LocationManagemenEntry(self, self.__lmaNames[0][1][0].get(), i+2, -1, i==0))
         self.update()
 
+    ##################################################################################
+    #
+    #  Description: Resets the trees
+    #
+    ##################################################################################
     def reset_trees(self):
         self.__tpa = Tree(PointerAlgorithm())
         self.__tfppa = Tree(ForwardingPointerPAlgorithm())
@@ -248,6 +384,11 @@ class LocationManagementApp(Tkinter.Tk):
         self.__trpa.put_ms_into_node_name(self.__ms2, 18)
         self.__trva.put_ms_into_node_name(self.__ms2, 18)
 
+    ##################################################################################
+    #
+    #  Description: Put the GUI entries into the trees
+    #
+    ##################################################################################
     def update_trees(self, inputs):
         self.__trpa.get_node(7).set_lcmr(float(inputs["node7cmr"].get()))
         self.__trpa.get_node(8).set_lcmr(float(inputs["node8cmr"].get()))
@@ -276,8 +417,13 @@ class LocationManagementApp(Tkinter.Tk):
         self.__trva.get_node(17).set_lcmr(float(inputs["node17cmr"].get()))
         self.__trva.get_node(18).set_lcmr(float(inputs["node18cmr"].get()))
         self.__trva.get_algorithm().set_mins(float(inputs["minS"].get()))
-        self.__trva.get_algorithm().set_mins(float(inputs["maxS"].get()))
+        self.__trva.get_algorithm().set_maxs(float(inputs["maxS"].get()))
 
+    ##################################################################################
+    #
+    #  Description: Moves ms1 to name
+    #
+    ##################################################################################
     def move_ms1(self, name, inputs):
         self.update_trees(inputs)
         if inputs["algo_option"].get() == "Pointer":
@@ -294,6 +440,11 @@ class LocationManagementApp(Tkinter.Tk):
         elif inputs["algo_option"].get() == "RActual":
             self.__trva.find_node_and_move_ms_location_from_node(self.__ms1, name)
 
+    ##################################################################################
+    #
+    #  Description: Move ms2 to name
+    #
+    ##################################################################################
     def move_ms2(self, name, inputs):
         self.update_trees(inputs)
         if inputs["algo_option"].get() == "Pointer":
@@ -309,24 +460,48 @@ class LocationManagementApp(Tkinter.Tk):
         elif inputs["algo_option"].get() == "RActual":
             self.__trva.find_node_and_move_ms_location_from_node(self.__ms2, name)
 
+    ##################################################################################
+    #
+    #  Description: ms2 calls ms1
+    #
+    ##################################################################################
     def ms2_call_ms1(self, inputs):
         if inputs["algo_option"].get() == "Pointer":
             self.__tpa.query_ms_location_from_node(self.__ms1, self.__ms2.get_node(self.__tpa.get_algorithm().get_type()))
-            self.__tpa.draw_tree(self.__ms1, self.__ms2)
+            #self.__tpa.draw_tree(self.__ms1, self.__ms2)
         elif inputs["algo_option"].get() == "Actual":
             self.__tva.query_ms_location_from_node(self.__ms1, self.__ms2.get_node(self.__tva.get_algorithm().get_type()))
-            self.__tva.draw_tree(self.__ms1, self.__ms2)
+            #self.__tva.draw_tree(self.__ms1, self.__ms2)
         elif inputs["algo_option"].get() == "FPPointer":
             self.__tfppa.query_ms_location_from_node(self.__ms1, self.__ms2.get_node(self.__tfppa.get_algorithm().get_type()))
-            self.__tfppa.draw_tree(self.__ms1, self.__ms2)
+            #self.__tfppa.draw_tree(self.__ms1, self.__ms2)
         elif inputs["algo_option"].get() == "FPActual":
             self.__tfpva.query_ms_location_from_node(self.__ms1, self.__ms2.get_node(self.__tfpva.get_algorithm().get_type()))
-            self.__tfpva.draw_tree(self.__ms1, self.__ms2)
+            #self.__tfpva.draw_tree(self.__ms1, self.__ms2)
         elif inputs["algo_option"].get() == "RPointer":
             self.__trpa.query_ms_location_from_node(self.__ms1, self.__ms2.get_node(self.__trpa.get_algorithm().get_type()))
-            self.__trpa.draw_tree(self.__ms1, self.__ms2)
+            #self.__trpa.draw_tree(self.__ms1, self.__ms2)
         elif inputs["algo_option"].get() == "RActual":
             self.__trva.query_ms_location_from_node(self.__ms1, self.__ms2.get_node(self.__trva.get_algorithm().get_type()))
+            #self.__trva.draw_tree(self.__ms1, self.__ms2)
+
+    ##################################################################################
+    #
+    #  Description: draws the tree
+    #
+    ##################################################################################
+    def draw_tree(self, inputs):
+        if inputs["algo_option"].get() == "Pointer":
+            self.__tpa.draw_tree(self.__ms1, self.__ms2)
+        elif inputs["algo_option"].get() == "Actual":
+            self.__tva.draw_tree(self.__ms1, self.__ms2)
+        elif inputs["algo_option"].get() == "FPPointer":
+            self.__tfppa.draw_tree(self.__ms1, self.__ms2)
+        elif inputs["algo_option"].get() == "FPActual":
+            self.__tfpva.draw_tree(self.__ms1, self.__ms2)
+        elif inputs["algo_option"].get() == "RPointer":
+            self.__trpa.draw_tree(self.__ms1, self.__ms2)
+        elif inputs["algo_option"].get() == "RActual":
             self.__trva.draw_tree(self.__ms1, self.__ms2)
 
 if __name__ == "__main__":
