@@ -18,7 +18,18 @@ location_list = [FORWARDING_P_FORWARD, FORWARDING_P_REVERSE, REPLICATION]
 location_list[len(location_list):] = algorithm_list
 
 
+##################################################################################
+#
+#  Class Description: This class is the tree. It contains nodes and allows an
+#                     algorithm to help move and search between nodes
+#
+##################################################################################
 class Tree(object):
+    ##################################################################################
+    #
+    #  Description: Creates the class instance and initializes the vars
+    #
+    ##################################################################################
     def __init__(self, algorithm):
         self.__root_node = None
         self.__leaf_nodes = []
@@ -31,6 +42,11 @@ class Tree(object):
         self.__tree_draw_count = 0
         return
 
+    ##################################################################################
+    #
+    #  Description: Add the root node to the tree and hold the leaf nodes in a list
+    #
+    ##################################################################################
     def add_node(self, node):
         if node.is_root():
             self.__root_node = node
@@ -38,18 +54,38 @@ class Tree(object):
             self.__leaf_nodes.append(node)
         return
 
+    ##################################################################################
+    #
+    #  Description: Get the root node
+    #
+    ##################################################################################
     def get_root_node(self):
         return self.__root_node
 
+    ##################################################################################
+    #
+    #  Description: Get the leaf node list
+    #
+    ##################################################################################
     def get_leaf_nodes(self):
         return self.__leaf_nodes
 
+    ##################################################################################
+    #
+    #  Description: Get the node named name
+    #
+    ##################################################################################
     def get_node(self, name):
         if self.__root_node is not None:
             return self.__root_node.get_child_with_name(name)
 
         return None
 
+    ##################################################################################
+    #
+    #  Description: Find the lca of 2 nodes
+    #
+    ##################################################################################
     @staticmethod
     def get_lca(node1, node2):
         n1 = node1
@@ -75,6 +111,11 @@ class Tree(object):
         else:
             return None
 
+    ##################################################################################
+    #
+    #  Description: Put the ms into a node named name. This is to initialize the ms in a node.
+    #
+    ##################################################################################
     def put_ms_into_node_name(self, ms, name):
         node = self.get_node(name)
         if node is None:
@@ -96,47 +137,117 @@ class Tree(object):
 
         return True
 
+    ##################################################################################
+    #
+    #  Description: Get the update count
+    #
+    ##################################################################################
     def get_update_count(self):
         return self.__algorithm.get_update_count()
 
+    ##################################################################################
+    #
+    #  Description: Get the search count
+    #
+    ##################################################################################
     def get_search_count(self):
         return self.__algorithm.get_search_count()
 
+    ##################################################################################
+    #
+    #  Description: Find a node named name and search for ms
+    #
+    ##################################################################################
     def find_node_and_query_ms_location_from_node(self, ms, name):
         del self.__node_search_list[:]
         return self.__algorithm.find_node_and_query_ms_location_from_node(ms, name)
 
+    ##################################################################################
+    #
+    #  Description: Find the ms node starting at node
+    #
+    ##################################################################################
     def query_ms_location_from_node(self, ms, node):
         del self.__node_search_list[:]
         return self.__algorithm.query_ms_location_from_node(ms, node)
 
+    ##################################################################################
+    #
+    #  Description: Find the node named name and move ms to it
+    #
+    ##################################################################################
     def find_node_and_move_ms_location_from_node(self, ms, name):
         del self.__node_update_list[:]
+        del self.__node_search_list[:]
         return self.__algorithm.find_node_and_move_ms_location_from_node(ms, name)
 
+    ##################################################################################
+    #
+    #  Description: Move ms to node
+    #
+    ##################################################################################
     def move_ms_to_node(self, ms, node):
         del self.__node_update_list[:]
+        del self.__node_search_list[:]
         return self.__algorithm.move_ms_to_node(ms, node)
 
+    ##################################################################################
+    #
+    #  Description: Get the tree algorithm
+    #
+    ##################################################################################
     def get_algorithm(self):
         return self.__algorithm
 
+    ##################################################################################
+    #
+    #  Description: Add a node to the search list if it is not already there
+    #
+    ##################################################################################
     def add_node_search(self, node):
         if self.__node_search_list.count(node) == 0:
             self.__node_search_list.append(node)
 
+    ##################################################################################
+    #
+    #  Description: Add a node to the update list if it is not already there
+    #
+    ##################################################################################
     def add_node_update(self, node):
         if self.__node_update_list.count(node) == 0:
             self.__node_update_list.append(node)
 
+    ##################################################################################
+    #
+    #  Description: Is the node in the update list
+    #
+    ##################################################################################
+    def has_node_been_updated(self, node):
+        return self.__node_update_list.count(node) > 0
+
+    ##################################################################################
+    #
+    #  Description: Add a node to the forwarding list if it is not already there
+    #
+    ##################################################################################
     def add_forwarding_update(self, node):
         if self.__forwarding_list.count(node) == 0:
             self.__forwarding_list.append(node)
 
+    ##################################################################################
+    #
+    #  Description: Delete a node from the forwarding list
+    #
+    ##################################################################################
     def delete_forwarding_update(self, node):
         if self.__forwarding_list.count(node) > 0:
             self.__forwarding_list.remove(node)
 
+    ##################################################################################
+    #
+    #  Description: Draw the tree in a dot file and display it
+    #
+    ##################################################################################
     def draw_tree(self, ms1, ms2):
         self.__tree_draw_count += 1
         directoryname = "dot\\"
@@ -163,12 +274,22 @@ class Tree(object):
 
         return
 
+    ##################################################################################
+    #
+    #  Description: Draw the nodes in dot
+    #
+    ##################################################################################
     def draw_nodes(self, f, node, ms1, ms2):
         it = node.get_children_nodes()
         for i in it:
             self.draw_nodes(f, i, ms1, ms2)
         self.draw_node(f, node, ms1, ms2)
 
+    ##################################################################################
+    #
+    #  Description: Draw a node in dot
+    #
+    ##################################################################################
     def draw_node(self, f, node, ms1, ms2):
         text = str(node.get_name()) + "[label=\"" + str(node.get_name())
         if ms1.get_node(self.get_algorithm().get_type()) is node:
@@ -182,6 +303,11 @@ class Tree(object):
         f.write(text)
         f.write("\n")
 
+    ##################################################################################
+    #
+    #  Description: Draw the edges in dot
+    #
+    ##################################################################################
     def draw_edges(self, f, node):
         it = node.get_children_nodes()
         for i in it:
@@ -190,18 +316,44 @@ class Tree(object):
         if not node.is_root():
             self.draw_edge(f, node)
 
+    ##################################################################################
+    #
+    #  Description: Draw the edge in dot
+    #
+    ##################################################################################
     def draw_edge(self, f, node):
         text = str(node.get_parent_node().get_name()) + " -- " + str(node.get_name()) + ";"
         f.write(text)
         f.write("\n")
 
+    ##################################################################################
+    #
+    #  Description: Draw the search edges in dot
+    #
+    ##################################################################################
     def draw_search_edges(self, f, search_list, ms1, ms2):
         self.get_algorithm().print_dot_search(f, search_list, ms1, ms2)
 
+    ##################################################################################
+    #
+    #  Description: Draw the search edge in dot
+    #
+    ##################################################################################
     def draw_update(self, f, forwarding_list, ms1, ms2):
         self.get_algorithm().print_dot_forwarding(f, forwarding_list, ms1, ms2)
 
+
+##################################################################################
+#
+#  Class Description: This class represents a node in the tree
+#
+##################################################################################
 class Node(object):
+    ##################################################################################
+    #
+    #  Description: Creates the class instance and initializes the vars
+    #
+    ##################################################################################
     def __init__(self, name):
         self.__name = name
         self.__parent_node = None
@@ -210,12 +362,27 @@ class Node(object):
         self.__lcmr = 0.0
         return
 
+    ##################################################################################
+    #
+    #  Description: Gets the name
+    #
+    ##################################################################################
     def get_name(self):
         return self.__name
 
+    ##################################################################################
+    #
+    #  Description: Get the child nodes
+    #
+    ##################################################################################
     def get_children_nodes(self):
         return self.__children_node
 
+    ##################################################################################
+    #
+    #  Description: Get the child node named name
+    #
+    ##################################################################################
     def get_child_with_name(self, name):
         if self.get_name() == name:
             return self
@@ -227,18 +394,38 @@ class Node(object):
 
         return None
 
+    ##################################################################################
+    #
+    #  Description: Add a child node
+    #
+    ##################################################################################
     def add_child_node(self, node):
         if self.__children_node.count(node) == 0:
             self.__children_node.append(node)
         return
 
+    ##################################################################################
+    #
+    #  Description: Add the parent node
+    #
+    ##################################################################################
     def add_parent_node(self, parent):
         self.__parent_node = parent
         return
 
+    ##################################################################################
+    #
+    #  Description: Get the parent node
+    #
+    ##################################################################################
     def get_parent_node(self):
         return self.__parent_node
 
+    ##################################################################################
+    #
+    #  Description: Find the ms of location type
+    #
+    ##################################################################################
     def find_ms(self, ms, loc=None):
         it = iter(self.__ms_list)
         for i in it:
@@ -251,6 +438,11 @@ class Node(object):
 
         return None
 
+    ##################################################################################
+    #
+    #  Description: Create a new index for ms in the list
+    #
+    ##################################################################################
     def get_new_ms_list_index(self):
         i = 0
         it = iter(self.__ms_list)
@@ -259,6 +451,11 @@ class Node(object):
                 i = j + 1
         return i
 
+    ##################################################################################
+    #
+    #  Description: Add an ms to the node
+    #
+    ##################################################################################
     def add_ms(self, ms):
         if self.find_ms(ms) is None:
             l = self.get_new_ms_list_index()
@@ -270,15 +467,35 @@ class Node(object):
                 self.__ms_list[l][LOCATION][loc] = None
         return
 
+    ##################################################################################
+    #
+    #  Description: Does the node contain ms
+    #
+    ##################################################################################
     def contains_ms(self, ms):
         return self.find_ms(ms) is None
 
+    ##################################################################################
+    #
+    #  Description: Is it the root node
+    #
+    ##################################################################################
     def is_root(self):
         return self.__parent_node is None
 
+    ##################################################################################
+    #
+    #  Description: Is it a leaf node
+    #
+    ##################################################################################
     def is_leaf(self):
         return len(self.__children_node) == 0
 
+    ##################################################################################
+    #
+    #  Description: Add a ms and location type
+    #
+    ##################################################################################
     def add_ms_location(self, ms, loc, loc_type):
         if self.find_ms(ms) is None:
             self.add_ms(ms)
@@ -288,6 +505,11 @@ class Node(object):
         else:
             return self.set_ms_location(ms, loc, loc_type)
 
+    ##################################################################################
+    #
+    #  Description: Set the ms location type
+    #
+    ##################################################################################
     def set_ms_location(self, ms, loc, loc_type):
         i = self.find_ms(ms)
         if i is not None:
@@ -296,6 +518,11 @@ class Node(object):
 
         return False
 
+    ##################################################################################
+    #
+    #  Description: The the ms location type
+    #
+    ##################################################################################
     def get_ms_location(self, ms, loc_type):
         i = self.find_ms(ms)
         if i is not None:
@@ -303,6 +530,11 @@ class Node(object):
 
         return None
 
+    ##################################################################################
+    #
+    #  Description: Delete the ms location type
+    #
+    ##################################################################################
     def delete_ms_location(self, ms, loc_type):
         i = self.find_ms(ms)
         if i is not None:
@@ -319,19 +551,39 @@ class Node(object):
                 return False
         return True
 
+    ##################################################################################
+    #
+    #  Description: Delete the ms from the node
+    #
+    ##################################################################################
     def delete_all_ms_locations(self, ms):
         i = self.find_ms(ms)
         if i is not None:
             del self.__ms_list[i]
         return
 
+    ##################################################################################
+    #
+    #  Description: Set the lcmr
+    #
+    ##################################################################################
     def set_lcmr(self, lcmr):
         self.__lcmr = lcmr
         return
 
+    ##################################################################################
+    #
+    #  Description: Get the lcmr
+    #
+    ##################################################################################
     def get_lcmr(self):
         return self.__lcmr
 
+    ##################################################################################
+    #
+    #  Description: Calcuate the lcmr
+    #
+    ##################################################################################
     def calculate_lcmr(self):
         if self.is_leaf():
             return self.__lcmr
@@ -345,8 +597,17 @@ class Node(object):
         return self.__lcmr
 
 
-
+##################################################################################
+#
+#  Class Description: This class represent a mobile subscribe
+#
+##################################################################################
 class MS(object):
+    ##################################################################################
+    #
+    #  Description: Creates the class instance and initializes the vars
+    #
+    ##################################################################################
     def __init__(self, name, max_forwards=5):
         self.__name = name
         self.__node_list = {}
@@ -356,24 +617,54 @@ class MS(object):
             self.__node_list[node_type] = None
         return
 
+    ##################################################################################
+    #
+    #  Description: Set the name
+    #
+    ##################################################################################
     def set_name(self, name):
         self.__name = name
         return
 
+    ##################################################################################
+    #
+    #  Description: Get the name
+    #
+    ##################################################################################
     def get_name(self):
         return self.__name
 
+    ##################################################################################
+    #
+    #  Description: Set the node of location type
+    #
+    ##################################################################################
     def set_node(self, node, loc_type):
         self.__node_list[loc_type] = node
         return
 
+    ##################################################################################
+    #
+    #  Description: Get the node of location type
+    #
+    ##################################################################################
     def get_node(self, loc_type):
         return self.__node_list[loc_type]
 
+    ##################################################################################
+    #
+    #  Description: Get the maximum number of forwards
+    #
+    ##################################################################################
     def get_max_forwards(self):
         return self.__max_forwards
 
 
+##################################################################################
+#
+#  Description: Creates the nodes and organizes the structure and adds to the tree
+#
+##################################################################################
 def fill_tree(tree):
     node0 = Node(0)
     node1 = Node(1)
@@ -452,7 +743,7 @@ def fill_tree(tree):
     node18.add_parent_node(node6)
 
     tree.add_node(node0)
-    for i in range(18):
+    for i in range(19):
         tree.add_node(tree.get_node(i))
 
     return

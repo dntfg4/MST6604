@@ -12,7 +12,17 @@ __license__ = 'Python'
 from LocationManagementConstants import *
 from LocationManagementMisc import *
 
+##################################################################################
+#
+#  Class Description: This is the base class of alorithms
+#
+##################################################################################
 class Algorithm(object):
+    ##################################################################################
+    #
+    #  Description: Creates the class instance and initializes the vars
+    #
+    ##################################################################################
     def __init__(self, algorithm_type, name=""):
         self.__search_count = 0
         self.__update_count = 0
@@ -21,70 +31,171 @@ class Algorithm(object):
         self.__name = name
         return
 
+    ##################################################################################
+    #
+    #  Description: This sets the search value
+    #
+    ##################################################################################
     def set_search_count(self, value):
         self.__search_count = value
         return
 
+    ##################################################################################
+    #
+    #  Description: This returns the current search count
+    #
+    ##################################################################################
     def get_search_count(self):
         return self.__search_count
 
+    ##################################################################################
+    #
+    #  Description: This increments the search count
+    #
+    ##################################################################################
     def increment_search_count(self):
         self.__search_count += 1
         return
 
+    ##################################################################################
+    #
+    #  Description: This set the search count
+    #
+    ##################################################################################
     def set_update_count(self, value):
         self.__update_count = value
         return
 
+    ##################################################################################
+    #
+    #  Description: The gets the update count
+    #
+    ##################################################################################
     def get_update_count(self):
         return self.__update_count
 
+    ##################################################################################
+    #
+    #  Description: This increments the update count
+    #
+    ##################################################################################
     def increment_update_count(self):
         self.__update_count += 1
         return
 
+    ##################################################################################
+    #
+    #  Description: This sets the tree for the algorithm
+    #
+    ##################################################################################
     def set_tree(self, tree):
         self.__tree = tree
         return
 
+    ##################################################################################
+    #
+    #  Description: This gets the tree for the algorithm
+    #
+    ##################################################################################
     def get_tree(self):
         return self.__tree
 
+    ##################################################################################
+    #
+    #  Description: This returns the algorithm type
+    #
+    ##################################################################################
     def get_type(self):
         return self.__type
 
+    ##################################################################################
+    #
+    #  Description: This gets the algorithm name
+    #
+    ##################################################################################
     def get_name(self):
         return self.__name
 
+    ##################################################################################
+    #
+    #  Description: This finds the node with name, searches for the node containing ms
+    #
+    ##################################################################################
     def find_node_and_query_ms_location_from_node(self, ms, name):
         pass
 
+    ##################################################################################
+    #
+    #  Description: This searches for the node which contains the ms starting from node and returns the node
+    #
+    ##################################################################################
     def query_ms_location_from_node(self, ms, node):
         return None
 
+    ##################################################################################
+    #
+    #  Description: This finds the node named name and moves ms to this node
+    #
+    ##################################################################################
     def find_node_and_move_ms_location_from_node(self, ms, name):
         return
 
+    ##################################################################################
+    #
+    #  Description: This moves ms to node
+    #
+    ##################################################################################
     def move_ms_to_node(self, ms, node):
         return None
 
+    ##################################################################################
+    #
+    #  Description: This prints the dot information for the search list
+    #
+    ##################################################################################
     def print_dot_search(self, f, search_list, ms1, ms2):
         return
 
+    ##################################################################################
+    #
+    #  Description: This prints the dot information for the forwarding list
+    #
+    ##################################################################################
     def print_dot_forwarding(self, f, search_list, ms1, ms2):
         return
 
 
+##################################################################################
+#
+#  Class Description: This the alorithm for Actual Values in the database
+#
+##################################################################################
 class ValueAlgorithm(Algorithm):
+    ##################################################################################
+    #
+    #  Description: Creates the class instance and initializes the vars
+    #
+    ##################################################################################
     def __init__(self, loc_type=VALUE, name="Actual_Value_Algorithm"):
         Algorithm.__init__(self, loc_type, name)
         return
 
+
+    ##################################################################################
+    #
+    #  Description: This finds the node with name, searches for the node containing ms
+    #
+    ##################################################################################
     def find_node_and_query_ms_location_from_node(self, ms, name):
         node = self.get_tree().get_node(name)
 
         return self.query_ms_location_from_node(ms, node)
 
+    ##################################################################################
+    #
+    #  Description: This searches for the node which contains the ms starting from node and returns the node
+    #
+    ##################################################################################
     def query_ms_location_from_node(self, ms, node):
         self.set_search_count(0)
 
@@ -121,11 +232,21 @@ class ValueAlgorithm(Algorithm):
 
         return None
 
+    ##################################################################################
+    #
+    #  Description: This finds the node named name and moves ms to this node
+    #
+    ##################################################################################
     def find_node_and_move_ms_location_from_node(self, ms, name):
         node = self.get_tree().get_node(name)
 
         return self.move_ms_to_node(ms, node)
 
+    ##################################################################################
+    #
+    #  Description: This moves ms to node
+    #
+    ##################################################################################
     def move_ms_to_node(self, ms, node):
         self.set_update_count(0)
 
@@ -154,6 +275,11 @@ class ValueAlgorithm(Algorithm):
         ms.set_node(node, self.get_type())
         return
 
+    ##################################################################################
+    #
+    #  Description: This prints the dot information for the search list
+    #
+    ##################################################################################
     def print_dot_search(self, f, search_list, ms1, ms2):
         if len(search_list) > 1:
             for i in range(len(search_list)):
@@ -165,16 +291,37 @@ class ValueAlgorithm(Algorithm):
                 f.write(text)
                 f.write("\n")
 
+
+##################################################################################
+#
+#  Class Description: This the alorithm for Node Pointer Values in the database
+#
+##################################################################################
 class PointerAlgorithm(Algorithm):
+    ##################################################################################
+    #
+    #  Description: Creates the class instance and initializes the vars
+    #
+    ##################################################################################
     def __init__(self, loc_type=POINTER, name="Pointer_Algorithm"):
         Algorithm.__init__(self, loc_type, name)
         return
 
+    ##################################################################################
+    #
+    #  Description: This finds the node with name, searches for the node containing ms
+    #
+    ##################################################################################
     def find_node_and_query_ms_location_from_node(self, ms, name):
         node = self.get_tree().get_node(name)
 
         return self.query_ms_location_from_node(ms, node)
 
+    ##################################################################################
+    #
+    #  Description: This searches for the node which contains the ms starting from node and returns the node
+    #
+    ##################################################################################
     def query_ms_location_from_node(self, ms, node):
         self.set_search_count(0)
 
@@ -223,11 +370,21 @@ class PointerAlgorithm(Algorithm):
 
         return None
 
+    ##################################################################################
+    #
+    #  Description: This finds the node named name and moves ms to this node
+    #
+    ##################################################################################
     def find_node_and_move_ms_location_from_node(self, ms, name):
         node = self.get_tree().get_node(name)
 
         return self.move_ms_to_node(ms, node)
 
+    ##################################################################################
+    #
+    #  Description: This moves ms to node
+    #
+    ##################################################################################
     def move_ms_to_node(self, ms, node):
         self.set_update_count(0)
 
@@ -263,6 +420,11 @@ class PointerAlgorithm(Algorithm):
         ms.set_node(node, self.get_type())
         return
 
+    ##################################################################################
+    #
+    #  Description: This prints the dot information for the search list
+    #
+    ##################################################################################
     def print_dot_search(self, f, search_list, ms1, ms2):
         if len(search_list) > 1:
             for i in range(len(search_list)):
@@ -275,7 +437,17 @@ class PointerAlgorithm(Algorithm):
                 f.write("\n")
 
 
+##################################################################################
+#
+#  Class Description: This the alorithm for Forwarding Pointers of Pointers in the database
+#
+##################################################################################
 class ForwardingPointerPAlgorithm(PointerAlgorithm):
+    ##################################################################################
+    #
+    #  Description: Creates the class instance and initializes the vars
+    #
+    ##################################################################################
     def __init__(self, max_forwards=2):
         PointerAlgorithm.__init__(self, FORWARDING_P, "Forwarding_Algorithm_For_Pointer")
         self.__forwarding_type = FORWARDING_P_FORWARD
@@ -284,10 +456,20 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
         self.__forwarding_level = 0
         return
 
+    ##################################################################################
+    #
+    #  Description: This sets the maximum number of forwards
+    #
+    ##################################################################################
     def set_max_forwards(self, max_forwards):
         __max_forwards = max_forwards
         return
 
+    ##################################################################################
+    #
+    #  Description: This calculates the current number of forwards for the ms
+    #
+    ##################################################################################
     def get_current_forwards_count(self, ms, ms_node):
         forwards = 0
         while (ms_node is not None) and (not ms_node.is_root()):
@@ -299,6 +481,11 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
                 ms_node = ms_node.get_ms_location(ms, self.__reverse_type)
         return forwards
 
+    ##################################################################################
+    #
+    #  Description: This purges the current pointers
+    #
+    ##################################################################################
     def purge_current_pointers(self, ms, ms_node):
         while not ms_node.is_root():
             prev_node = ms_node.get_ms_location(ms, self.__reverse_type)
@@ -311,6 +498,11 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
             ms_node = prev_node
         return
 
+    ##################################################################################
+    #
+    #  Description: This searches for the node which contains the ms starting from node and returns the node
+    #
+    ##################################################################################
     def query_ms_location_from_node(self, ms, node):
         self.set_search_count(0)
 
@@ -360,6 +552,11 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
 
         return None
 
+    ##################################################################################
+    #
+    #  Description: This moves ms to node
+    #
+    ##################################################################################
     def move_ms_to_node(self, ms, node):
         self.set_update_count(0)
         ms_node = ms.get_node(self.get_type())
@@ -448,13 +645,28 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
         ms.set_node(node, self.get_type())
         return
 
+    ##################################################################################
+    #
+    #  Description: This returns the current forwarding level
+    #
+    ##################################################################################
     def determine_forwarding_level_up(self, ms):
         return self.__forwarding_level
 
+    ##################################################################################
+    #
+    #  Description: This sets the forwarding level
+    #
+    ##################################################################################
     def set_forwarding_level(self, level):
         self.__forwarding_level = level
         return
 
+    ##################################################################################
+    #
+    #  Description: This gets the tree level distance from ms to node2
+    #
+    ##################################################################################
     def get_node_level_distance(self, ms, node2):
         distance = 0
 
@@ -469,6 +681,11 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
 
         return distance
 
+    ##################################################################################
+    #
+    #  Description: This determines the current number of forwards ms has.
+    #
+    ##################################################################################
     def determine_number_of_forwards(self,ms):
         forwards = 0
         node = ms.get_node(self.get_type())
@@ -482,6 +699,11 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
 
         return forwards
 
+    ##################################################################################
+    #
+    #  Description: This returns the node level_up levels from ms
+    #
+    ##################################################################################
     def get_ms_level_node(self, ms, level_up):
         node = ms.get_node(self.get_type())
         levels = level_up
@@ -495,6 +717,11 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
 
         return node
 
+    ##################################################################################
+    #
+    #  Description: This returns the node level_up levels from node
+    #
+    ##################################################################################
     def get_level_node(self, node, level_up):
         levels = level_up
 
@@ -504,6 +731,11 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
 
         return node
 
+    ##################################################################################
+    #
+    #  Description: This prints the dot information for the search list
+    #
+    ##################################################################################
     def print_dot_search(self, f, search_list, ms1, ms2):
         if len(search_list) > 1:
             for i in range(len(search_list)):
@@ -524,6 +756,11 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
                     f.write(text)
                     f.write("\n")
 
+    ##################################################################################
+    #
+    #  Description: This prints the dot information for the forwarding list
+    #
+    ##################################################################################
     def print_dot_forwarding(self, f, forwarding_list, ms1, ms2):
         for i in range(len(forwarding_list)):
             if forwarding_list[i].get_ms_location(ms1,self.__forwarding_type):
@@ -538,7 +775,18 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
                 f.write(text)
                 f.write("\n")
 
+
+##################################################################################
+#
+#  Class Description: This the alorithm for Forwarding Pointers of Actual Values in the database
+#
+##################################################################################
 class ForwardingPointerVAlgorithm(ValueAlgorithm):
+    ##################################################################################
+    #
+    #  Description: Creates the class instance and initializes the vars
+    #
+    ##################################################################################
     def __init__(self, max_forwards=2):
         ValueAlgorithm.__init__(self, FORWARDING_V, "Forwarding_Algorithm_For_Actual_Value")
         self.__forwarding_type = FORWARDING_P_FORWARD
@@ -546,10 +794,20 @@ class ForwardingPointerVAlgorithm(ValueAlgorithm):
         self.__max_forwards = max_forwards
         return
 
+    ##################################################################################
+    #
+    #  Description: This sets the maximum forwards
+    #
+    ##################################################################################
     def set_max_forwards(self, max_forwards):
         __max_forwards = max_forwards
         return
 
+    ##################################################################################
+    #
+    #  Description: This calculates the current number of forwards for the ms
+    #
+    ##################################################################################
     def get_current_forwards_count(self, ms, ms_node):
         forwards = 0
         while ms_node.get_ms_location(ms, self.__reverse_type) is not None:
@@ -557,6 +815,11 @@ class ForwardingPointerVAlgorithm(ValueAlgorithm):
             ms_node = ms_node.get_ms_location(ms, self.__reverse_type)
         return forwards
 
+    ##################################################################################
+    #
+    #  Description: This purges the current pointers
+    #
+    ##################################################################################
     def purge_current_pointers(self, ms, ms_node):
         while ms_node.get_ms_location(ms, self.__reverse_type) is not None:
             prev_node = ms_node.get_ms_location(ms, self.__reverse_type)
@@ -571,6 +834,11 @@ class ForwardingPointerVAlgorithm(ValueAlgorithm):
         ms.set_node(ms_node,self.get_type())
         return
 
+    ##################################################################################
+    #
+    #  Description: This searches for the node which contains the ms starting from node and returns the node
+    #
+    ##################################################################################
     def query_ms_location_from_node(self, ms, node):
         self.set_search_count(0)
 
@@ -627,6 +895,11 @@ class ForwardingPointerVAlgorithm(ValueAlgorithm):
 
             return node
 
+    ##################################################################################
+    #
+    #  Description: This moves ms to node
+    #
+    ##################################################################################
     def move_ms_to_node(self, ms, node):
         self.set_update_count(0)
 
@@ -678,6 +951,11 @@ class ForwardingPointerVAlgorithm(ValueAlgorithm):
         ms.set_node(node, self.get_type())
         return
 
+    ##################################################################################
+    #
+    #  Description: This removes the pre_loop condition for forwards
+    #
+    ##################################################################################
     def remove_pre_loop_items(self, ms, node):
         ms_node = ms.get_node(self.get_type())
 
@@ -698,6 +976,11 @@ class ForwardingPointerVAlgorithm(ValueAlgorithm):
 
         return
 
+    ##################################################################################
+    #
+    #  Description: This prints the dot information for the search list
+    #
+    ##################################################################################
     def print_dot_search(self, f, search_list, ms1, ms2):
         if len(search_list) > 1:
             for i in range(len(search_list)):
@@ -718,6 +1001,11 @@ class ForwardingPointerVAlgorithm(ValueAlgorithm):
                     f.write(text)
                     f.write("\n")
 
+    ##################################################################################
+    #
+    #  Description: This prints the dot information for the forwarding list
+    #
+    ##################################################################################
     def print_dot_forwarding(self, f, forwarding_list, ms1, ms2):
         for i in range(len(forwarding_list)):
             if forwarding_list[i].get_ms_location(ms1,self.__forwarding_type):
@@ -732,49 +1020,79 @@ class ForwardingPointerVAlgorithm(ValueAlgorithm):
                 f.write(text)
                 f.write("\n")
 
+
+##################################################################################
+#
+#  Class Description: This the class for replication values
+#
+##################################################################################
 class ReplicationValues(object):
-    def __init__(self, n=5, l=1, mins=.6, maxs=1.2):
-        self.__n = n
-        self.__l = l
+    ##################################################################################
+    #
+    #  Description: Creates the class instance and initializes the vars
+    #
+    ##################################################################################
+    def __init__(self, mins=.6, maxs=1.2):
         self.__mins = mins
         self.__maxs = maxs
         return
 
-    def set_n(self, n):
-        self.__n = n
-        return
-
-    def get_n(self):
-        return self.__n
-
-    def set_l(self, l):
-        self.__l = l
-        return
-
-    def get_l(self):
-        return self.__l
-
+    ##################################################################################
+    #
+    #  Description: This set mins
+    #
+    ##################################################################################
     def set_mins(self, mins):
         self.__mins = mins
         return
 
+    ##################################################################################
+    #
+    #  Description: This returns mins
+    #
+    ##################################################################################
     def get_mins(self):
         return self.__mins
 
+    ##################################################################################
+    #
+    #  Description: This sets maxs
+    #
+    ##################################################################################
     def set_maxs(self, maxs):
         self.__maxs = maxs
         return
 
+    ##################################################################################
+    #
+    #  Description: This returns maxs
+    #
+    ##################################################################################
     def get_maxs(self):
         return self.__maxs
 
 
+##################################################################################
+#
+#  Class Description: This the alorithm for Replication of Pointer Values in the database
+#
+##################################################################################
 class ReplicationPointerAlgorithm(PointerAlgorithm, ReplicationValues):
+    ##################################################################################
+    #
+    #  Description: Creates the class instance and initializes the vars
+    #
+    ##################################################################################
     def __init__(self):
         PointerAlgorithm.__init__(self, REPLICATION_P, "Replication_Algorithm_For_Pointer")
         ReplicationValues.__init__(self)
         return
-    
+
+    ##################################################################################
+    #
+    #  Description: This searches for the node which contains the ms starting from node and returns the node
+    #
+    ##################################################################################
     def query_ms_location_from_node(self, ms, node):
         self.set_search_count(0)
 
@@ -833,10 +1151,20 @@ class ReplicationPointerAlgorithm(PointerAlgorithm, ReplicationValues):
 
         return None
 
+    ##################################################################################
+    #
+    #  Description: This moves ms to node
+    #
+    ##################################################################################
     def move_ms_to_node(self, ms, node):
         super(ReplicationPointerAlgorithm, self).move_ms_to_node(ms, node)
         self.perform_replication(ms)
 
+    ##################################################################################
+    #
+    #  Description: This performs the replication process
+    #
+    ##################################################################################
     def perform_replication(self, ms):
         it = iter(self.get_tree().get_leaf_nodes())
         for i in it:
@@ -849,7 +1177,7 @@ class ReplicationPointerAlgorithm(PointerAlgorithm, ReplicationValues):
                         rnode.set_ms_location(ms, None, REPLICATION)
                         if not self.get_tree().has_node_been_updated(rnode):
                             self.increment_update_count()
-                            self.get_tree().add_node_update(ms_node)
+                            self.get_tree().add_node_update(rnode)
                         if rnode.get_ms_location(ms, REPLICATION_V) is None:
                             rnode.delete_all_ms_locations(ms)
                 else: # for our topology, we at each spot if needed
@@ -861,6 +1189,11 @@ class ReplicationPointerAlgorithm(PointerAlgorithm, ReplicationValues):
                             self.get_tree().add_node_update(rnode)
                 node = node.get_parent_node()
 
+    ##################################################################################
+    #
+    #  Description: This prints the dot information for the search list
+    #
+    ##################################################################################
     def print_dot_search(self, f, search_list, ms1, ms2):
         if len(search_list) > 1:
             for i in range(len(search_list)):
@@ -882,12 +1215,27 @@ class ReplicationPointerAlgorithm(PointerAlgorithm, ReplicationValues):
                     f.write("\n")
 
 
+##################################################################################
+#
+#  Class Description: This the alorithm for Replication of Actual Values in the database
+#
+##################################################################################
 class ReplicationValueAlgorithm(ValueAlgorithm, ReplicationValues):
+    ##################################################################################
+    #
+    #  Description: Creates the class instance and initializes the vars
+    #
+    ##################################################################################
     def __init__(self):
-        ValueAlgorithm.__init__(self, REPLICATION_V, "Forwarding_Algorithm_For_Actual_Value")
+        ValueAlgorithm.__init__(self, REPLICATION_V, "Replication_Algorithm_For_Actual_Value")
         ReplicationValues.__init__(self)
         return
-    
+
+    ##################################################################################
+    #
+    #  Description: This searches for the node which contains the ms starting from node and returns the node
+    #
+    ##################################################################################
     def query_ms_location_from_node(self, ms, node):
         self.set_search_count(0)
 
@@ -929,10 +1277,20 @@ class ReplicationValueAlgorithm(ValueAlgorithm, ReplicationValues):
 
         return None
 
+    ##################################################################################
+    #
+    #  Description: This moves ms to node
+    #
+    ##################################################################################
     def move_ms_to_node(self, ms, node):
         super(ReplicationValueAlgorithm, self).move_ms_to_node(ms, node)
         self.perform_replication(ms)
 
+    ##################################################################################
+    #
+    #  Description: This performs the replication process
+    #
+    ##################################################################################
     def perform_replication(self, ms):
         it = iter(self.get_tree().get_leaf_nodes())
         for i in it:
@@ -942,18 +1300,26 @@ class ReplicationValueAlgorithm(ValueAlgorithm, ReplicationValues):
                 rnode = node.get_ms_location(ms, REPLICATION)
                 if lcmr < self.get_mins():
                     if rnode is not None:
-                        rnode.set_ms_location(ms, None, REPLICATION)
-                        if not self.get_tree().has_node_been_updated(rnode):
+                        node.set_ms_location(ms, None, REPLICATION)
+                        if not self.get_tree().has_node_been_updated(node):
                             self.increment_update_count()
-                        if rnode.get_ms_location(ms, REPLICATION_V) is None:
-                            rnode.delete_all_ms_locations(ms)
-                else: # for our topology, we at each spot if needed
+                            self.get_tree().add_node_update(node)
+                        if node.get_ms_location(ms, REPLICATION_V) is None:
+                            node.delete_all_ms_locations(ms)
+                # for our topology, all nodes with a lcmr between mins <= lcmr < maxs will be replicated
+                elif ((lcmr >= self.get_mins()) and (lcmr < self.get_maxs())) or (lcmr >= self.get_maxs()):
                     if (rnode is None) or (rnode is not ms.get_node(REPLICATION_V)):
                         node.add_ms_location(ms, ms.get_node(REPLICATION_V), REPLICATION)
-                        if not self.get_tree().has_node_been_updated(rnode):
+                        if not self.get_tree().has_node_been_updated(node):
                             self.increment_update_count()
+                            self.get_tree().add_node_update(node)
                 node = node.get_parent_node()
 
+    ##################################################################################
+    #
+    #  Description: This prints the dot information for the search list
+    #
+    ##################################################################################
     def print_dot_search(self, f, search_list, ms1, ms2):
         if len(search_list) > 1:
             for i in range(len(search_list)):
