@@ -205,7 +205,7 @@ class ValueAlgorithm(Algorithm):
             return node
 
         # check the node
-        if node.find_ms(ms, self.get_type()) is not None:
+        if node.get_ms_location(ms, self.get_type()) is not None:
             found = True
             return node.get_ms_location(ms, self.get_type())
         else:
@@ -220,7 +220,7 @@ class ValueAlgorithm(Algorithm):
             self.increment_search_count()
 
             while not found:
-                if node.find_ms(ms, self.get_type()) is not None:
+                if node.get_ms_location(ms, self.get_type()) is not None:
                     found = True
                     self.get_tree().add_node_search(node)
                     return node.get_ms_location(ms, self.get_type())
@@ -331,10 +331,8 @@ class PointerAlgorithm(Algorithm):
             return node
 
         # check the node
-        if node.find_ms(ms, self.get_type()) is not None:
-            found = True
-            if node is node.get_ms_location(ms, self.get_type()):
-                return node
+        if node is node.get_ms_location(ms, self.get_type()):
+            return node
 
         # look up the tree
         if not found:
@@ -349,7 +347,7 @@ class PointerAlgorithm(Algorithm):
 
             while (not found) and (node is not None):
                 self.get_tree().add_node_search(node)
-                if node.find_ms(ms, self.get_type()) is not None:
+                if node.get_ms_location(ms, self.get_type()) is not None:
                     found = True
                 else:
                     node = node.get_parent_node()
@@ -453,7 +451,6 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
         self.__forwarding_type = FORWARDING_P_FORWARD
         self.__reverse_type = FORWARDING_P_REVERSE
         self.__max_forwards = max_forwards
-        self.__forwarding_level = 0
         return
 
     ##################################################################################
@@ -512,10 +509,8 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
             return node
 
         # check the node
-        if node.find_ms(ms) is not None:
-            found = True
-            if node is ms.get_node(self.get_type()):
-                return node
+        if node is node.get_ms_location(ms, self.get_type()):
+            return node
 
         # look up the tree
         if not found:
@@ -528,7 +523,7 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
 
             while (not found) and (node is not None):
                 self.get_tree().add_node_search(node)
-                if (node.find_ms(ms, self.__forwarding_type) is not None) or (node.find_ms(ms, self.get_type()) is not None):
+                if (node.get_ms_location(ms, self.__forwarding_type) is not None) or (node.get_ms_location(ms, self.get_type()) is not None):
                     found = True
                 else:
                     node = node.get_parent_node()
@@ -564,39 +559,39 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
         if (node is None) or (ms_node is None) or (ms_node is node):
             return
 
-        if self.get_current_forwards_count(ms, ms_node) >= self.__max_forwards:
-            self.purge_current_pointers(ms, ms_node)
-            node.add_ms_location(ms, node, self.get_type())
-            ms.set_node(node, self.get_type())
-            self.increment_update_count()
-            self.get_tree().add_node_update(node)
-            parent_node = node.get_parent_node()
-            while node is not None:
-                parent_node = node.get_parent_node()
-                if parent_node is not None:
-                    if parent_node.get_ms_location(ms, self.get_type()) is not node:
-                        parent_node.add_ms_location(ms, node, self.get_type())
-                        self.increment_update_count()
-                        self.get_tree().add_node_update(parent_node)
-                node = parent_node
-            return
+        # if self.get_current_forwards_count(ms, ms_node) >= self.__max_forwards:
+        #     self.purge_current_pointers(ms, ms_node)
+        #     node.add_ms_location(ms, node, self.get_type())
+        #     ms.set_node(node, self.get_type())
+        #     self.increment_update_count()
+        #     self.get_tree().add_node_update(node)
+        #     parent_node = node.get_parent_node()
+        #     while node is not None:
+        #         parent_node = node.get_parent_node()
+        #         if parent_node is not None:
+        #             if parent_node.get_ms_location(ms, self.get_type()) is not node:
+        #                 parent_node.add_ms_location(ms, node, self.get_type())
+        #                 self.increment_update_count()
+        #                 self.get_tree().add_node_update(parent_node)
+        #         node = parent_node
+        #     return
 
-        level_up = self.determine_forwarding_level_up(ms)
-        if level_up == 0:
+        lca = self.get_tree().get_lca(ms_node, node)
+        level_node_ms = self.determine_forwarding_level_node(ms_node, lca)
+        level_node = self.determine_forwarding_level_node(node, lca)
+        if (level_node_ms is ms_node):
             current_update_count = self.get_update_count()
             super(ForwardingPointerPAlgorithm, self).move_ms_to_node(ms, node)
             self.set_update_count(current_update_count + self.get_update_count())
             return
 
-
-        lca = self.get_tree().get_lca(ms_node, node)
-        level_distance = self.get_node_level_distance(ms, lca)
-        if level_up < level_distance:
-            level_node_ms = self.get_ms_level_node(ms, level_up)
-            level_node = self.get_level_node(node, level_up)
-        else:
-            level_node_ms = lca
-            level_node = lca
+        # level_distance = self.get_node_level_distance(ms, lca)
+        # if level_up < level_distance:
+        #     level_node_ms = self.get_ms_level_node(ms, level_up)
+        #     level_node = self.get_level_node(node, level_up)
+        # else:
+        #     level_node_ms = lca
+        #     level_node = lca
 
         while level_node_ms is not ms_node:
             next_node = ms_node.get_ms_location(ms, self.get_type())
@@ -633,15 +628,17 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
             self.get_tree().add_node_update(level_node_ms)
             level_node.add_ms_location(ms, level_node_ms, self.__reverse_type)
 
+            # node.delete_all_ms_locations(ms)
+            # node.add_ms_location(ms, node, self.get_type())
+            # self.increment_update_count()
+            # self.get_tree().add_node_update(node)
+
+        if node is not level_node:
             node.delete_all_ms_locations(ms)
             node.add_ms_location(ms, node, self.get_type())
             self.increment_update_count()
             self.get_tree().add_node_update(node)
 
-        node.delete_all_ms_locations(ms)
-        node.add_ms_location(ms, node, self.get_type())
-        self.increment_update_count()
-        self.get_tree().add_node_update(node)
         ms.set_node(node, self.get_type())
         return
 
@@ -650,17 +647,18 @@ class ForwardingPointerPAlgorithm(PointerAlgorithm):
     #  Description: This returns the current forwarding level
     #
     ##################################################################################
-    def determine_forwarding_level_up(self, ms):
-        return self.__forwarding_level
+    def determine_forwarding_level_node(self, node, lca):
+        tcmr = .5
+        fnode = node
 
-    ##################################################################################
-    #
-    #  Description: This sets the forwarding level
-    #
-    ##################################################################################
-    def set_forwarding_level(self, level):
-        self.__forwarding_level = level
-        return
+        while node is not lca:
+            lcmr = node.calculate_lcmr()
+            if lcmr > tcmr:
+                fnode = node
+            node = node.get_parent_node()
+            tcmr += .5
+
+        return fnode
 
     ##################################################################################
     #
@@ -938,10 +936,11 @@ class ForwardingPointerVAlgorithm(ValueAlgorithm):
         self.get_tree().add_node_update(node)
 
         lca = self.get_tree().get_lca(ms_node, node)
+        level_node = self.determine_forwarding_level_node(node, lca)
 
         tmp_node = node
 
-        while (lca is not tmp_node) and (lca is not tmp_node.get_parent_node()):
+        while (level_node is not tmp_node):
             node_parent = tmp_node.get_parent_node()
             node_parent.add_ms_location(ms, node, self.get_type())
             tmp_node = node_parent
@@ -950,6 +949,24 @@ class ForwardingPointerVAlgorithm(ValueAlgorithm):
 
         ms.set_node(node, self.get_type())
         return
+
+    ##################################################################################
+    #
+    #  Description: This returns the current forwarding level
+    #
+    ##################################################################################
+    def determine_forwarding_level_node(self, node, lca):
+        tcmr = .5
+        fnode = node
+
+        while node is not lca:
+            lcmr = node.calculate_lcmr()
+            if lcmr > tcmr:
+                fnode = node
+            node = node.get_parent_node()
+            tcmr += .5
+
+        return fnode
 
     ##################################################################################
     #
@@ -1102,12 +1119,12 @@ class ReplicationPointerAlgorithm(PointerAlgorithm, ReplicationValues):
             return node
 
         # check the node
-        if node.get_ms_location(ms, self.get_type()) is not None:
+        if node.get_ms_location(ms, REPLICATION) is not None:
+            return node.get_ms_location(ms, REPLICATION)
+        elif node.get_ms_location(ms, self.get_type()) is not None:
             found = True
             if node is node.get_ms_location(ms, self.get_type()):
                 return node
-        elif node.get_ms_location(ms, REPLICATION) is not None:
-            return node.get_ms_location(ms, REPLICATION)
 
         # look up the tree
         if not found:
@@ -1122,23 +1139,19 @@ class ReplicationPointerAlgorithm(PointerAlgorithm, ReplicationValues):
 
             while (not found) and (node is not None):
                 self.get_tree().add_node_search(node)
-                if node.find_ms(ms, self.get_type()) is not None:
-                    found = True
-                elif node.get_ms_location(ms, REPLICATION) is not None:
+                if node.get_ms_location(ms, REPLICATION) is not None:
                     return node.get_ms_location(ms, REPLICATION)
+                elif node.get_ms_location(ms, self.get_type()) is not None:
+                    found = True
+                    if node is node.get_ms_location(ms, self.get_type()):
+                        self.get_tree().add_node_search(node)
+                        return node
                 else:
                     node = node.get_parent_node()
                     self.increment_search_count()
 
         # Now look down the pointer list
         if found:
-            if node is node.get_ms_location(ms, self.get_type()):
-                self.get_tree().add_node_search(node)
-                return node
-            elif node.get_ms_location(ms, REPLICATION):
-                self.get_tree().add_node_search(node)
-                return node.get_ms_location(ms, REPLICATION)
-
             while node is not node.get_ms_location(ms, self.get_type()):
                 self.get_tree().add_node_search(node)
                 if node.get_ms_location(ms, REPLICATION) is not None:
@@ -1174,19 +1187,19 @@ class ReplicationPointerAlgorithm(PointerAlgorithm, ReplicationValues):
                 rnode = node.get_ms_location(ms, REPLICATION)
                 if lcmr < self.get_mins():
                     if rnode is not None:
-                        rnode.set_ms_location(ms, None, REPLICATION)
-                        if not self.get_tree().has_node_been_updated(rnode):
+                        node.set_ms_location(ms, None, REPLICATION)
+                        if not self.get_tree().has_node_been_updated(node):
                             self.increment_update_count()
-                            self.get_tree().add_node_update(rnode)
-                        if rnode.get_ms_location(ms, REPLICATION_V) is None:
-                            rnode.delete_all_ms_locations(ms)
-                else: # for our topology, we at each spot if needed
-                    if (rnode is None) or (rnode is not ms.get_node(REPLICATION_V)):
-                        node.add_ms_location(ms, ms.get_node(REPLICATION_V), REPLICATION)
-                        self.get_tree().add_node_update(node)
-                        if not self.get_tree().has_node_been_updated(rnode):
+                            self.get_tree().add_node_update(node)
+                        if node.get_ms_location(ms, REPLICATION_P) is None:
+                            node.delete_all_ms_locations(ms)
+                # for our topology, all nodes with a lcmr between mins <= lcmr < maxs will be replicated
+                elif ((lcmr >= self.get_mins()) and (lcmr < self.get_maxs())) or (lcmr >= self.get_maxs()):
+                    if (rnode is None) or (rnode is not ms.get_node(REPLICATION_P)):
+                        node.add_ms_location(ms, ms.get_node(REPLICATION_P), REPLICATION)
+                        if not self.get_tree().has_node_been_updated(node):
                             self.increment_update_count()
-                            self.get_tree().add_node_update(rnode)
+                            self.get_tree().add_node_update(node)
                 node = node.get_parent_node()
 
     ##################################################################################
@@ -1245,11 +1258,10 @@ class ReplicationValueAlgorithm(ValueAlgorithm, ReplicationValues):
             return node
 
         # check the node
-        if node.find_ms(ms, self.get_type()) is not None:
-            found = True
-            return node.get_ms_location(ms, self.get_type())
-        elif node.find_ms(ms, REPLICATION_V) is not None:
+        if node.get_ms_location(ms, REPLICATION) is not None:
             return node.get_ms_location(ms, REPLICATION)
+        elif node.get_ms_location(ms, self.get_type()) is not None:
+            return node.get_ms_location(ms, self.get_type())
         else:
             # look up the tree
             if node.is_root():
@@ -1262,13 +1274,12 @@ class ReplicationValueAlgorithm(ValueAlgorithm, ReplicationValues):
             self.increment_search_count()
 
             while not found:
-                if node.find_ms(ms, self.get_type()) is not None:
-                    found = True
-                    self.get_tree().add_node_search(node)
-                    return node.get_ms_location(ms, self.get_type())
-                elif node.find_ms(ms, REPLICATION) is not None:
+                if node.get_ms_location(ms, REPLICATION) is not None:
                     self.get_tree().add_node_search(node)
                     return node.get_ms_location(ms, REPLICATION)
+                elif node.get_ms_location(ms, self.get_type()) is not None:
+                    self.get_tree().add_node_search(node)
+                    return node.get_ms_location(ms, self.get_type())
                 else:
                     if not node.is_root():
                         self.get_tree().add_node_search(node)

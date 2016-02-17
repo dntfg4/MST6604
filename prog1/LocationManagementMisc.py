@@ -121,10 +121,7 @@ class Tree(object):
         if node is None:
             return False
 
-        if (self.__algorithm.get_type() == VALUE) or (self.__algorithm.get_type() == FORWARDING_V) or (self.__algorithm.get_type() == REPLICATION_V):
-            node.add_ms_location(ms, node, self.__algorithm.get_type())
-        else:
-            node.add_ms_location(ms, node, self.__algorithm.get_type())
+        node.add_ms_location(ms, node, self.__algorithm.get_type())
         ms.set_node(node, self.__algorithm.get_type())
 
         while not node.is_root():
@@ -136,6 +133,18 @@ class Tree(object):
             node = node_parent
 
         return True
+
+    ##################################################################################
+    #
+    #  Description: Remove ms from tree starting at snode
+    #
+    ##################################################################################
+    def remove_ms_from_tree(self, ms, snode):
+        while snode is not None:
+            snode.delete_all_ms_locations(ms)
+            snode = snode.get_parent_node()
+
+        return
 
     ##################################################################################
     #
@@ -747,110 +756,3 @@ def fill_tree(tree):
         tree.add_node(tree.get_node(i))
 
     return
-
-
-if __name__ == "__main__":
-    tpa = Tree(PointerAlgorithm())
-    tfppa = Tree(ForwardingPointerPAlgorithm())
-    tva = Tree(ValueAlgorithm())
-    tfpva = Tree(ForwardingPointerVAlgorithm())
-    trva = Tree(ReplicationValueAlgorithm())
-    trpa = Tree(ReplicationPointerAlgorithm())
-    fill_tree(tpa)
-    fill_tree(tva)
-    fill_tree(tfppa)
-    fill_tree(tfpva)
-    fill_tree(trva)
-    fill_tree(trpa)
-
-    ms1 = MS(1)
-
-    tpa.put_ms_into_node_name(ms1, 7)
-    tva.put_ms_into_node_name(ms1, 7)
-    tfppa.put_ms_into_node_name(ms1, 7)
-    tfpva.put_ms_into_node_name(ms1, 7)
-    trpa.put_ms_into_node_name(ms1, 7)
-    trva.put_ms_into_node_name(ms1, 7)
-
-    ms2 = MS(2)
-
-    tpa.put_ms_into_node_name(ms2, 18)
-    tva.put_ms_into_node_name(ms2, 18)
-    tfppa.put_ms_into_node_name(ms2, 18)
-    tfpva.put_ms_into_node_name(ms2, 18)
-    trpa.put_ms_into_node_name(ms2, 18)
-    trva.put_ms_into_node_name(ms2, 18)
-
-    #tpa.find_node_and_move_ms_location_from_node(ms1, 13)
-    #print "PA Update Count  = %d" % tpa.get_update_count()
-    tpa.find_node_and_move_ms_location_from_node(ms1, 13)
-    p = tpa.find_node_and_query_ms_location_from_node(ms1, ms2.get_node(POINTER).get_name())
-    #tva.find_node_and_move_ms_location_from_node(ms1, 13)
-    #print "VA Update Count  = %d" % tva.get_update_count()
-    tva.find_node_and_move_ms_location_from_node(ms1, 13)
-    v = tva.find_node_and_query_ms_location_from_node(ms1, ms2.get_node(VALUE).get_name())
-    #tfppa.find_node_and_move_ms_location_from_node(ms1, 13)
-    #print "FPP Update Count = %d" % tfppa.get_update_count()
-    tfppa.find_node_and_move_ms_location_from_node(ms1, 11)
-    fpp = tfppa.find_node_and_query_ms_location_from_node(ms1, ms2.get_node(FORWARDING_P).get_name())
-    print "FPP Search Count = %d" % tfppa.get_search_count()
-    print "FPP Update Count = %d" % tfppa.get_update_count()
-    tfppa.find_node_and_move_ms_location_from_node(ms1, 13)
-    fpp = tfppa.find_node_and_query_ms_location_from_node(ms1, ms2.get_node(FORWARDING_P).get_name())
-    print "FPP Search Count = %d" % tfppa.get_search_count()
-    print "FPP Update Count = %d" % tfppa.get_update_count()
-    tfppa.find_node_and_move_ms_location_from_node(ms1, 15)
-    fpp = tfppa.find_node_and_query_ms_location_from_node(ms1, ms2.get_node(FORWARDING_P).get_name())
-    print "FPP Search Count = %d" % tfppa.get_search_count()
-    print "FPP Update Count = %d" % tfppa.get_update_count()
-    tfppa.find_node_and_move_ms_location_from_node(ms1, 13)
-    fpp = tfppa.find_node_and_query_ms_location_from_node(ms1, ms2.get_node(FORWARDING_P).get_name())
-    #tfpva.find_node_and_move_ms_location_from_node(ms1, 13)
-    #print "FPV Update Count = %d" % tfpva.get_update_count()
-    #tfpva.find_node_and_move_ms_location_from_node(ms1, 11)
-    #fpv = tfpva.find_node_and_query_ms_location_from_node(ms1, ms2.get_node(FORWARDING_V).get_name())
-    #print "FPV Search Count = %d" % tfpva.get_search_count()
-    #print "FPV Update Count = %d" % tfpva.get_update_count()
-    #tfpva.find_node_and_move_ms_location_from_node(ms1, 13)
-    #fpv = tfpva.find_node_and_query_ms_location_from_node(ms1, ms2.get_node(FORWARDING_V).get_name())
-    #print "FPV Search Count = %d" % tfpva.get_search_count()
-    #print "FPV Update Count = %d" % tfpva.get_update_count()
-    #tfpva.find_node_and_move_ms_location_from_node(ms1, 12)
-    #fpv = tfpva.find_node_and_query_ms_location_from_node(ms1, ms2.get_node(FORWARDING_V).get_name())
-    #print "FPV Search Count = %d" % tfpva.get_search_count()
-    #print "FPV Update Count = %d" % tfpva.get_update_count()
-    tfpva.find_node_and_move_ms_location_from_node(ms1, 13)
-    fpv = tfpva.find_node_and_query_ms_location_from_node(ms1, ms2.get_node(FORWARDING_V).get_name())
-    trpa.find_node_and_move_ms_location_from_node(ms1, 13)
-    p = trpa.find_node_and_query_ms_location_from_node(ms1, ms2.get_node(POINTER).get_name())
-    trva.find_node_and_move_ms_location_from_node(ms1, 13)
-    p = trva.find_node_and_query_ms_location_from_node(ms1, ms2.get_node(POINTER).get_name())
-    print
-    print
-    print "PA Search Count  = %d" % tpa.get_search_count()
-    print "PA Update Count  = %d" % tpa.get_update_count()
-    print "VA Search Count  = %d" % tva.get_search_count()
-    print "VA Update Count  = %d" % tva.get_update_count()
-    print "FPP Search Count = %d" % tfppa.get_search_count()
-    print "FPP Update Count = %d" % tfppa.get_update_count()
-    print "FPV Search Count = %d" % tfpva.get_search_count()
-    print "FPV Update Count = %d" % tfpva.get_update_count()
-    print "RPA Search Count  = %d" % trpa.get_search_count()
-    print "RPA Update Count  = %d" % trpa.get_update_count()
-    print "RVA Search Count  = %d" % trva.get_search_count()
-    print "RVA Update Count  = %d" % trva.get_update_count()
-    print
-    print
-
-    if (p.get_name() == v.get_name()) and (p.get_name() == fpp.get_name()) and (p.get_name() == fpv.get_name()):
-        print "All search results are the same."
-    else:
-        print "All search results are NOT the same!!"
-        print "p    = %d" % p.get_name()
-        print "v    = %d" % v.get_name()
-        print "fpp  = %d" % fpp.get_name()
-        print "fpv  = %d" % fpv.get_name()
-
-    tpa.draw_tree(ms1, ms2)
-    tva.draw_tree(ms1, ms2)
-    tfppa.draw_tree(ms1, ms2)

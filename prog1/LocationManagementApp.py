@@ -74,7 +74,6 @@ class LocationManagementLabels:
     def __initialize(self):
         self.__addHeaderLabel()
         self.__addLabel("Algorithm Option")
-        self.__addLabel("Tree Level")
         self.__addLabel("Leaf Node 7 CMR")
         self.__addLabel("Leaf Node 8 CMR")
         self.__addLabel("Leaf Node 9 CMR")
@@ -90,6 +89,7 @@ class LocationManagementLabels:
         self.__addLabel("minS")
         self.__addLabel("maxS")
         self.__addLabel("MS1: Move to Node")
+        self.__addLabel("MS2: Call MS1 from node")
 
 
 ##################################################################################
@@ -125,8 +125,7 @@ class LocationManagemenEntry:
     def __addDropDownEntry(self, varName, setFocus=False):
         self.__inputs[varName] = Tkinter.StringVar()
         self.__inputs[varName].set("Pointer")
-        #'Pointer','Actual','FPPointer', 'FPActual', 'RPointer', 'RActual'
-        self.__entries[varName] = Tkinter.OptionMenu(self.__parent,self.__inputs[varName], 'Pointer','Actual','FPPointer', 'RActual')
+        self.__entries[varName] = Tkinter.OptionMenu(self.__parent,self.__inputs[varName], 'Pointer','Actual','FPPointer', 'FPActual', 'RPointer', 'RActual')
         self.__entries[varName].grid(column = self.__col, row = self.__nextRow(), sticky='EW')
 
     ##################################################################################
@@ -166,7 +165,6 @@ class LocationManagemenEntry:
         self.__header = Tkinter.Label(self.__parent, text = "Values", width = 20)
         self.__header.grid(column = self.__col, row = self.__nextRow(), sticky = "W")
         self.__addDropDownEntry("algo_option", self.__setFocus)
-        self.__addIntEntry("treelevel", 1)
         self.__addDoubleEntry("node7cmr", 0.3, self.__setFocus)
         self.__addDoubleEntry("node8cmr", 0.3, self.__setFocus)
         self.__addDoubleEntry("node9cmr", 0.3, self.__setFocus)
@@ -182,15 +180,15 @@ class LocationManagemenEntry:
         self.__addDoubleEntry("minS", .6, self.__setFocus)
         self.__addDoubleEntry("maxS", 1.2, self.__setFocus)
         self.__addIntEntry("ms1movetonode", 7)
-        #self.__addIntEntry("ms2movetonode", 18)
+        self.__addIntEntry("callms1fromnode", 18)
 
         self.__lmaButton = Tkinter.Button(self.__parent,text="Move MS1", command=self.__OnMS1MoveClick)
         self.__lmaButton.grid(column=self.__col, row=self.__nextRow())
         self.__lmaButton.bind("<Return>", self.__OnMS1MoveClickEvt)
 
-        self.__lmaButton = Tkinter.Button(self.__parent,text="MS2 Call MS1", command=self.__OnMS2CallMS1MoveClick)
+        self.__lmaButton = Tkinter.Button(self.__parent,text="MS2 Call MS1", command=self.__OnCallMS1MoveClick)
         self.__lmaButton.grid(column=self.__col, row=self.__nextRow())
-        self.__lmaButton.bind("<Return>", self.__OnMS2CallMS1MoveClickEvt)
+        self.__lmaButton.bind("<Return>", self.____OnCallMS1MoveClickEvt)
 
         self.__lmaButton = Tkinter.Button(self.__parent,text="Draw Tree", command=self.__OnDrawTreeClick)
         self.__lmaButton.grid(column=self.__col, row=self.__nextRow())
@@ -255,19 +253,19 @@ class LocationManagemenEntry:
 
     ##################################################################################
     #
-    #  Description: ms2 call ms1 button evt
+    #  Description: call ms1 button evt
     #
     ##################################################################################
-    def __OnMS2CallMS1MoveClickEvt(self, evt):
-        self.__OnMS2CallMS1MoveClick()
+    def ____OnCallMS1MoveClickEvt(self, evt):
+        self.__OnCallMS1MoveClick()
 
     ##################################################################################
     #
-    #  Description: ms2 call ms1 button press
+    #  Description: call ms1 button press
     #
     ##################################################################################
-    def __OnMS2CallMS1MoveClick(self):
-        self.__parent.ms2_call_ms1(self.__inputs)
+    def __OnCallMS1MoveClick(self):
+        self.__parent.call_ms1(self.__inputs)
 
 
 ##################################################################################
@@ -390,34 +388,62 @@ class LocationManagementApp(Tkinter.Tk):
     #
     ##################################################################################
     def update_trees(self, inputs):
-        self.__trpa.get_node(7).set_lcmr(float(inputs["node7cmr"].get()))
-        self.__trpa.get_node(8).set_lcmr(float(inputs["node8cmr"].get()))
-        self.__trpa.get_node(9).set_lcmr(float(inputs["node9cmr"].get()))
-        self.__trpa.get_node(10).set_lcmr(float(inputs["node10cmr"].get()))
-        self.__trpa.get_node(11).set_lcmr(float(inputs["node11cmr"].get()))
-        self.__trpa.get_node(12).set_lcmr(float(inputs["node12cmr"].get()))
-        self.__trpa.get_node(13).set_lcmr(float(inputs["node13cmr"].get()))
-        self.__trpa.get_node(14).set_lcmr(float(inputs["node14cmr"].get()))
-        self.__trpa.get_node(15).set_lcmr(float(inputs["node15cmr"].get()))
-        self.__trpa.get_node(16).set_lcmr(float(inputs["node16cmr"].get()))
-        self.__trpa.get_node(17).set_lcmr(float(inputs["node17cmr"].get()))
-        self.__trpa.get_node(18).set_lcmr(float(inputs["node18cmr"].get()))
-        self.__trpa.get_algorithm().set_mins(float(inputs["minS"].get()))
-        self.__trpa.get_algorithm().set_mins(float(inputs["maxS"].get()))
-        self.__trva.get_node(7).set_lcmr(float(inputs["node7cmr"].get()))
-        self.__trva.get_node(8).set_lcmr(float(inputs["node8cmr"].get()))
-        self.__trva.get_node(9).set_lcmr(float(inputs["node9cmr"].get()))
-        self.__trva.get_node(10).set_lcmr(float(inputs["node10cmr"].get()))
-        self.__trva.get_node(11).set_lcmr(float(inputs["node11cmr"].get()))
-        self.__trva.get_node(12).set_lcmr(float(inputs["node12cmr"].get()))
-        self.__trva.get_node(13).set_lcmr(float(inputs["node13cmr"].get()))
-        self.__trva.get_node(14).set_lcmr(float(inputs["node14cmr"].get()))
-        self.__trva.get_node(15).set_lcmr(float(inputs["node15cmr"].get()))
-        self.__trva.get_node(16).set_lcmr(float(inputs["node16cmr"].get()))
-        self.__trva.get_node(17).set_lcmr(float(inputs["node17cmr"].get()))
-        self.__trva.get_node(18).set_lcmr(float(inputs["node18cmr"].get()))
-        self.__trva.get_algorithm().set_mins(float(inputs["minS"].get()))
-        self.__trva.get_algorithm().set_maxs(float(inputs["maxS"].get()))
+        if inputs["algo_option"].get() == "FPPointer":
+            self.__tfppa.get_node(7).set_lcmr(float(inputs["node7cmr"].get()))
+            self.__tfppa.get_node(8).set_lcmr(float(inputs["node8cmr"].get()))
+            self.__tfppa.get_node(9).set_lcmr(float(inputs["node9cmr"].get()))
+            self.__tfppa.get_node(10).set_lcmr(float(inputs["node10cmr"].get()))
+            self.__tfppa.get_node(11).set_lcmr(float(inputs["node11cmr"].get()))
+            self.__tfppa.get_node(12).set_lcmr(float(inputs["node12cmr"].get()))
+            self.__tfppa.get_node(13).set_lcmr(float(inputs["node13cmr"].get()))
+            self.__tfppa.get_node(14).set_lcmr(float(inputs["node14cmr"].get()))
+            self.__tfppa.get_node(15).set_lcmr(float(inputs["node15cmr"].get()))
+            self.__tfppa.get_node(16).set_lcmr(float(inputs["node16cmr"].get()))
+            self.__tfppa.get_node(17).set_lcmr(float(inputs["node17cmr"].get()))
+            self.__tfppa.get_node(18).set_lcmr(float(inputs["node18cmr"].get()))
+        elif inputs["algo_option"].get() == "FPActual":
+            self.__tfpva.get_node(7).set_lcmr(float(inputs["node7cmr"].get()))
+            self.__tfpva.get_node(8).set_lcmr(float(inputs["node8cmr"].get()))
+            self.__tfpva.get_node(9).set_lcmr(float(inputs["node9cmr"].get()))
+            self.__tfpva.get_node(10).set_lcmr(float(inputs["node10cmr"].get()))
+            self.__tfpva.get_node(11).set_lcmr(float(inputs["node11cmr"].get()))
+            self.__tfpva.get_node(12).set_lcmr(float(inputs["node12cmr"].get()))
+            self.__tfpva.get_node(13).set_lcmr(float(inputs["node13cmr"].get()))
+            self.__tfpva.get_node(14).set_lcmr(float(inputs["node14cmr"].get()))
+            self.__tfpva.get_node(15).set_lcmr(float(inputs["node15cmr"].get()))
+            self.__tfpva.get_node(16).set_lcmr(float(inputs["node16cmr"].get()))
+            self.__tfpva.get_node(17).set_lcmr(float(inputs["node17cmr"].get()))
+            self.__tfpva.get_node(18).set_lcmr(float(inputs["node18cmr"].get()))
+        elif inputs["algo_option"].get() == "RPointer":
+            self.__trpa.get_node(7).set_lcmr(float(inputs["node7cmr"].get()))
+            self.__trpa.get_node(8).set_lcmr(float(inputs["node8cmr"].get()))
+            self.__trpa.get_node(9).set_lcmr(float(inputs["node9cmr"].get()))
+            self.__trpa.get_node(10).set_lcmr(float(inputs["node10cmr"].get()))
+            self.__trpa.get_node(11).set_lcmr(float(inputs["node11cmr"].get()))
+            self.__trpa.get_node(12).set_lcmr(float(inputs["node12cmr"].get()))
+            self.__trpa.get_node(13).set_lcmr(float(inputs["node13cmr"].get()))
+            self.__trpa.get_node(14).set_lcmr(float(inputs["node14cmr"].get()))
+            self.__trpa.get_node(15).set_lcmr(float(inputs["node15cmr"].get()))
+            self.__trpa.get_node(16).set_lcmr(float(inputs["node16cmr"].get()))
+            self.__trpa.get_node(17).set_lcmr(float(inputs["node17cmr"].get()))
+            self.__trpa.get_node(18).set_lcmr(float(inputs["node18cmr"].get()))
+            self.__trpa.get_algorithm().set_mins(float(inputs["minS"].get()))
+            self.__trpa.get_algorithm().set_maxs(float(inputs["maxS"].get()))
+        elif inputs["algo_option"].get() == "RActual":
+            self.__trva.get_node(7).set_lcmr(float(inputs["node7cmr"].get()))
+            self.__trva.get_node(8).set_lcmr(float(inputs["node8cmr"].get()))
+            self.__trva.get_node(9).set_lcmr(float(inputs["node9cmr"].get()))
+            self.__trva.get_node(10).set_lcmr(float(inputs["node10cmr"].get()))
+            self.__trva.get_node(11).set_lcmr(float(inputs["node11cmr"].get()))
+            self.__trva.get_node(12).set_lcmr(float(inputs["node12cmr"].get()))
+            self.__trva.get_node(13).set_lcmr(float(inputs["node13cmr"].get()))
+            self.__trva.get_node(14).set_lcmr(float(inputs["node14cmr"].get()))
+            self.__trva.get_node(15).set_lcmr(float(inputs["node15cmr"].get()))
+            self.__trva.get_node(16).set_lcmr(float(inputs["node16cmr"].get()))
+            self.__trva.get_node(17).set_lcmr(float(inputs["node17cmr"].get()))
+            self.__trva.get_node(18).set_lcmr(float(inputs["node18cmr"].get()))
+            self.__trva.get_algorithm().set_mins(float(inputs["minS"].get()))
+            self.__trva.get_algorithm().set_maxs(float(inputs["maxS"].get()))
 
     ##################################################################################
     #
@@ -431,7 +457,6 @@ class LocationManagementApp(Tkinter.Tk):
         elif inputs["algo_option"].get() == "Actual":
             self.__tva.find_node_and_move_ms_location_from_node(self.__ms1, name)
         elif inputs["algo_option"].get() == "FPPointer":
-            self.__tfppa.get_algorithm().set_forwarding_level(int(inputs["treelevel"].get()))
             self.__tfppa.find_node_and_move_ms_location_from_node(self.__ms1, name)
         elif inputs["algo_option"].get() == "FPActual":
             self.__tfpva.find_node_and_move_ms_location_from_node(self.__ms1, name)
@@ -462,28 +487,43 @@ class LocationManagementApp(Tkinter.Tk):
 
     ##################################################################################
     #
-    #  Description: ms2 calls ms1
+    #  Description: calls ms1
     #
     ##################################################################################
-    def ms2_call_ms1(self, inputs):
+    def call_ms1(self, inputs):
+        node_name = int(inputs["callms1fromnode"].get())
+
         if inputs["algo_option"].get() == "Pointer":
+            if node_name != self.__ms2.get_node(self.__tpa.get_algorithm().get_type()).get_name():
+                self.__tpa.remove_ms_from_tree(self.__ms2, self.__ms2.get_node(self.__tpa.get_algorithm().get_type()))
+                self.__tpa.put_ms_into_node_name(self.__ms2, node_name)
             self.__tpa.query_ms_location_from_node(self.__ms1, self.__ms2.get_node(self.__tpa.get_algorithm().get_type()))
-            #self.__tpa.draw_tree(self.__ms1, self.__ms2)
         elif inputs["algo_option"].get() == "Actual":
+            if node_name != self.__ms2.get_node(self.__tva.get_algorithm().get_type()).get_name():
+                self.__tva.remove_ms_from_tree(self.__ms2, self.__ms2.get_node(self.__tva.get_algorithm().get_type()))
+                self.__tva.put_ms_into_node_name(self.__ms2, node_name)
             self.__tva.query_ms_location_from_node(self.__ms1, self.__ms2.get_node(self.__tva.get_algorithm().get_type()))
-            #self.__tva.draw_tree(self.__ms1, self.__ms2)
         elif inputs["algo_option"].get() == "FPPointer":
+            if node_name != self.__ms2.get_node(self.__tfppa.get_algorithm().get_type()).get_name():
+                self.__tfppa.remove_ms_from_tree(self.__ms2, self.__ms2.get_node(self.__tfppa.get_algorithm().get_type()))
+                self.__tfppa.put_ms_into_node_name(self.__ms2, node_name)
             self.__tfppa.query_ms_location_from_node(self.__ms1, self.__ms2.get_node(self.__tfppa.get_algorithm().get_type()))
-            #self.__tfppa.draw_tree(self.__ms1, self.__ms2)
         elif inputs["algo_option"].get() == "FPActual":
+            if node_name != self.__ms2.get_node(self.__tfpva.get_algorithm().get_type()).get_name():
+                self.__tfpva.remove_ms_from_tree(self.__ms2, self.__ms2.get_node(self.__tfpva.get_algorithm().get_type()))
+                self.__tfpva.put_ms_into_node_name(self.__ms2, node_name)
             self.__tfpva.query_ms_location_from_node(self.__ms1, self.__ms2.get_node(self.__tfpva.get_algorithm().get_type()))
-            #self.__tfpva.draw_tree(self.__ms1, self.__ms2)
         elif inputs["algo_option"].get() == "RPointer":
+            if node_name != self.__ms2.get_node(self.__trpa.get_algorithm().get_type()).get_name():
+                self.__trpa.remove_ms_from_tree(self.__ms2, self.__ms2.get_node(self.__trpa.get_algorithm().get_type()))
+                self.__trpa.put_ms_into_node_name(self.__ms2, node_name)
             self.__trpa.query_ms_location_from_node(self.__ms1, self.__ms2.get_node(self.__trpa.get_algorithm().get_type()))
-            #self.__trpa.draw_tree(self.__ms1, self.__ms2)
         elif inputs["algo_option"].get() == "RActual":
+            if node_name != self.__ms2.get_node(self.__trva.get_algorithm().get_type()).get_name():
+                self.__trva.remove_ms_from_tree(self.__ms2, self.__ms2.get_node(self.__trva.get_algorithm().get_type()))
+                self.__trva.put_ms_into_node_name(self.__ms2, node_name)
             self.__trva.query_ms_location_from_node(self.__ms1, self.__ms2.get_node(self.__trva.get_algorithm().get_type()))
-            #self.__trva.draw_tree(self.__ms1, self.__ms2)
+
 
     ##################################################################################
     #
