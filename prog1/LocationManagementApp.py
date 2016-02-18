@@ -5,8 +5,8 @@
 
 __author__ = 'James Soehlke and David Taylor'
 __version__ = '$Revision: 1.0 $'[11:-2]
-__date__ = '$Date: 2016/02/06 12:00:00 $'
-__copyright__ = 'Copyright (c) 2016 James Soehlke and David N. Taylor'
+__date__ = '$Date: 2016/02/17 12:00:00 $'
+__copyright__ = '2016 James Soehlke and David N. Taylor'
 __license__ = 'Python'
 
 import sys
@@ -165,20 +165,20 @@ class LocationManagemenEntry:
         self.__header = Tkinter.Label(self.__parent, text = "Values", width = 20)
         self.__header.grid(column = self.__col, row = self.__nextRow(), sticky = "W")
         self.__addDropDownEntry("algo_option", self.__setFocus)
-        self.__addDoubleEntry("node7cmr", 0.3, self.__setFocus)
-        self.__addDoubleEntry("node8cmr", 0.3, self.__setFocus)
-        self.__addDoubleEntry("node9cmr", 0.3, self.__setFocus)
-        self.__addDoubleEntry("node10cmr", 0.3, self.__setFocus)
-        self.__addDoubleEntry("node11cmr", 0.3, self.__setFocus)
-        self.__addDoubleEntry("node12cmr", 0.3, self.__setFocus)
-        self.__addDoubleEntry("node13cmr", 0.3, self.__setFocus)
-        self.__addDoubleEntry("node14cmr", 0.3, self.__setFocus)
-        self.__addDoubleEntry("node15cmr", 0.3, self.__setFocus)
-        self.__addDoubleEntry("node16cmr", 0.3, self.__setFocus)
-        self.__addDoubleEntry("node17cmr", 0.3, self.__setFocus)
-        self.__addDoubleEntry("node18cmr", 0.3, self.__setFocus)
-        self.__addDoubleEntry("minS", .6, self.__setFocus)
-        self.__addDoubleEntry("maxS", 1.2, self.__setFocus)
+        self.__addDoubleEntry("node7cmr", 0.9, self.__setFocus)
+        self.__addDoubleEntry("node8cmr", 0.9, self.__setFocus)
+        self.__addDoubleEntry("node9cmr", 0.9, self.__setFocus)
+        self.__addDoubleEntry("node10cmr", 0.9, self.__setFocus)
+        self.__addDoubleEntry("node11cmr", 0.9, self.__setFocus)
+        self.__addDoubleEntry("node12cmr", 0.9, self.__setFocus)
+        self.__addDoubleEntry("node13cmr", 0.9, self.__setFocus)
+        self.__addDoubleEntry("node14cmr", 0.9, self.__setFocus)
+        self.__addDoubleEntry("node15cmr", 0.9, self.__setFocus)
+        self.__addDoubleEntry("node16cmr", 0.9, self.__setFocus)
+        self.__addDoubleEntry("node17cmr", 0.9, self.__setFocus)
+        self.__addDoubleEntry("node18cmr", 0.9, self.__setFocus)
+        self.__addDoubleEntry("minS", 1.8, self.__setFocus)
+        self.__addDoubleEntry("maxS", 3.6, self.__setFocus)
         self.__addIntEntry("ms1movetonode", 7)
         self.__addIntEntry("callms1fromnode", 18)
 
