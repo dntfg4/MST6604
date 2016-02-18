@@ -5,8 +5,8 @@
 
 __author__ = 'James Soehlke and David Taylor'
 __version__ = '$Revision: 1.0 $'[11:-2]
-__date__ = '$Date: 2016/02/06 12:00:00 $'
-__copyright__ = 'Copyright (c) 2016 James Soehlke and David N. Taylor'
+__date__ = '$Date: 2016/02/17 12:00:00 $'
+__copyright__ = '2016 James Soehlke and David N. Taylor'
 __license__ = 'Python'
 
 import subprocess
