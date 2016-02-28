@@ -1,0 +1,118 @@
+from LocationManagementAlgorithms import *
+from LMCircle import *
+from Queue import *
+import time
+
+##################################################################################
+#
+#  Class Description: This class represent a mobile subscribe
+#
+##################################################################################
+class MH(object):
+    ##################################################################################
+    #
+    #  Description: Creates the class instance and initializes the vars
+    #
+    ##################################################################################
+    def __init__(self, name):
+        self.__name = name
+        self.__mss = None
+        self.__gui = None
+        self.__mode = "DOZE"
+        self.set_mode("DOZE", "Initialization")
+        self.__request_count = 0
+        self.__request_q = Queue()
+
+    ##################################################################################
+    #
+    #  Description: Set the name
+    #
+    ##################################################################################
+    def set_name(self, name):
+        self.__name = name
+
+    ##################################################################################
+    #
+    #  Description: Get the name
+    #
+    ##################################################################################
+    def get_name(self):
+        return self.__name
+
+    ##################################################################################
+    #
+    #  Description: Set the node of location type
+    #
+    ##################################################################################
+    def set_node(self, mss):
+        self.set_mode("ACTIVE", "Moving")
+        self.__mss = mss
+        self.move_gui(self.get_node().get_gui_node())
+        self.set_mode("DOZE", "Finished Move")
+        return
+
+    ##################################################################################
+    #
+    #  Description: Get the node of location type
+    #
+    ##################################################################################
+    def get_node(self):
+        return self.__mss
+
+    def add_gui(self, gui):
+        self.__gui = gui
+
+    def get_gui(self):
+        return self.__gui
+
+    def move_gui(self, node):
+        self.__gui.move(node)
+        return
+
+    def set_mode(self, mode, reason):
+        self.__mode = mode
+        print "MH%d is in %s Mode: %s" % (self.get_name(), self.__mode, reason)
+
+    def get_mode(self):
+        return self.__mode
+
+    def request_token(self, mh, message=""):
+        if self.get_node() is not None:
+            self.__request_count += 1
+            self.__request_q.put((self.get_node(), mh, message, self.__request_count))
+            self.get_node().request_token(self, self.__request_count)
+
+    def send_message(self, mh, message="Happy Default Message from me"):
+        if self.__request_q.empty():
+            self.set_mode("ACTIVE", "Request Token")
+            self.request_token(mh, message)
+            self.set_mode("DOZE", "Requested Token")
+        else:
+            print "NO TOKEN REQUEST: MH%d already has requested the token" % self.__name
+
+    def process_token(self, token):
+        self.set_mode("ACTIVE", "Processing Token")
+        self.__gui.token_node()
+        time.sleep(1)
+        while not self.__request_q.empty():
+            request = self.__request_q.get(False)
+            self.get_node().send_message(request[1], request[2])
+        self.__gui.untoken_node()
+        self.set_mode("DOZE", "Returned Token")
+
+    def process_message(self, message):
+        self.set_mode("ACTIVE", "Processing Message")
+        print "MH%d - Received Message: %s" % (self.__name, message)
+        self.set_mode("DOZE", "Processed Message")
+
+    def join(self, mss):
+        if not self.__request_q.empty():
+            q = Queue()
+            while not self.__request_q.empty():
+                request = self.__request_q.get(False)
+                print "MH%d - Informing MSS%d of previous token request" % (self.__name, self.get_node().get_name())
+                mss.inform_mss(self, request[0])
+                q.put(request)
+
+            del self.__request_q
+            self.__request_q = q
