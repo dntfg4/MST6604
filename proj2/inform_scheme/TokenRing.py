@@ -43,15 +43,14 @@ class TokenRingThread(threading.Thread):
         while not self.stoprequest.isSet():
             try:
                 it = iter(self.leaf_nodes)
+                self.__token.increment_counter()
+                print "token counter = %d" % self.__token.get_counter()
 
                 for i in it:
                     print "Token Ring Grant MSS%d" % i.get_name()
                     self.grant_token(i)
                     time.sleep(self.__wait)
                     self.retrieve_token(i)
-
-                self.__token.increment_counter()
-                print "token counter = %d" % self.__token.get_counter()
 
             except:
                 continue

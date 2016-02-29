@@ -83,25 +83,34 @@ class MH(object):
             self.get_node().request_token(self, self.__request_count)
 
     def send_message(self, mh, message="Happy Default Message from me"):
-        if self.__request_q.empty():
-            self.set_mode("ACTIVE", "Request Token")
-            self.request_token(mh, message)
-            self.set_mode("DOZE", "Requested Token")
-        else:
-            print "NO TOKEN REQUEST: MH%d already has requested the token" % self.__name
+        self.set_mode("ACTIVE", "Request Token")
+        self.request_token(mh, message)
+        self.set_mode("DOZE", "Requested Token")
 
     def process_token(self, token):
         self.set_mode("ACTIVE", "Processing Token")
         self.__gui.token_node()
+        self.__request_count = token.get_counter()
         time.sleep(1)
+        q = Queue()
         while not self.__request_q.empty():
             request = self.__request_q.get(False)
-            self.get_node().send_message(request[1], request[2])
+            if request[3] < token.get_counter():
+                self.__gui.search_line("green")
+                self.get_node().send_message(request[1], request[2])
+            else:
+                q.put(request)
+
+        if not q.empty():
+            del self.__request_q
+            self.__request_q = q
+
         self.__gui.untoken_node()
         self.set_mode("DOZE", "Returned Token")
 
     def process_message(self, message):
         self.set_mode("ACTIVE", "Processing Message")
+        self.__gui.search_line("green")
         print "MH%d - Received Message: %s" % (self.__name, message)
         self.set_mode("DOZE", "Processed Message")
 
