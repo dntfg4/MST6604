@@ -267,12 +267,20 @@ class Node(object):
     def receive_token(self, token):
         self.__token = token
         self.token_node()
+        q = Queue()
         while not self.__request.empty():
             self.untoken_node()
-            print "Token MSS%d" % self.__name
             request = self.__request.get(False)
-            request[0].grant_process_token(self.__token, request[1])
+            if request[2] < self.__token.get_counter():
+                print "Token MSS%d grants token to MH%d" % (self.__name, request[1].get_name())
+                request[0].grant_process_token(self.__token, request[1])
+            else:
+                q.put(request)
             self.untoken_node()
+
+        if not q.empty():
+            del self.__request
+            self.__request = q
 
     def grant_process_token(self, token, mh):
         mh.process_token(token)
