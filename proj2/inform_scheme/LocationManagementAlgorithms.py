@@ -256,6 +256,9 @@ class PointerAlgorithm(Algorithm):
         # initialize the update count
         self.set_update_count(0)
 
+        if not node.is_leaf():
+            return
+
         # get the node where ms is located
         ms_node = ms.get_node()
 
