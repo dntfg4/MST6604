@@ -177,28 +177,28 @@ class LocationManagemenEntry:
         self.__addStringEntry("ms2messagems1","Hello MS1")
         #self.__addIntEntry("callms1fromnode", 18)
 
-        self.__lmaButton = Tkinter.Button(self.__parent,text="Move MS1", command=self.__OnMS1MoveClick)
+        self.__lmaButton = Tkinter.Button(self.__parent,text="Token Ring Wait Time", command=self.__OnTokenRingWaitTimeClick)
         self.__lmaButton.grid(column=self.__col + 1, row=1)
+        self.__lmaButton.bind("<Return>", self.__OnTokenRingWaitTimeClickEvt)
+
+        self.__lmaButton = Tkinter.Button(self.__parent,text="Move MS1", command=self.__OnMS1MoveClick)
+        self.__lmaButton.grid(column=self.__col + 1, row=2)
         self.__lmaButton.bind("<Return>", self.__OnMS1MoveClickEvt)
 
         self.__lmaButton = Tkinter.Button(self.__parent,text="Move MS2", command=self.__OnMS2MoveClick)
-        self.__lmaButton.grid(column=self.__col + 1 , row=2)
+        self.__lmaButton.grid(column=self.__col + 1 , row=3)
         self.__lmaButton.bind("<Return>", self.__OnMS2MoveClickEvt)
-
-        self.__lmaButton = Tkinter.Button(self.__parent,text="Token Ring Wait Time", command=self.__OnTokenRingWaitTimeClick)
-        self.__lmaButton.grid(column=self.__col + 2, row=1)
-        self.__lmaButton.bind("<Return>", self.__OnTokenRingWaitTimeClickEvt)
 
         # self.__lmaButton = Tkinter.Button(self.__parent,text="MS2 Call MS1", command=self.__OnCallMS1MoveClick)
         # self.__lmaButton.grid(column=self.__col, row=self.__nextRow())
         # self.__lmaButton.bind("<Return>", self.__OnCallMS1MoveClickEvt)
         
         self.__lmaButton = Tkinter.Button(self.__parent,text="MS1 messages MS2", command=self.__OnMS1MsgMS2Click)
-        self.__lmaButton.grid(column=self.__col + 2, row=2)
+        self.__lmaButton.grid(column=self.__col + 1, row=4)
         self.__lmaButton.bind("<Return>", self.__OnMS1MsgMS2ClickEvt)
         
         self.__lmaButton = Tkinter.Button(self.__parent,text="MS2 messages MS1", command=self.__OnMS2MsgMS1Click)
-        self.__lmaButton.grid(column=self.__col+2, row=3)
+        self.__lmaButton.grid(column=self.__col+1, row=5)
         self.__lmaButton.bind("<Return>", self.__OnMS2MsgMS1ClickEvt)
 
         self.__resultVar = Tkinter.StringVar()
