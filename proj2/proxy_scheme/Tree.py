@@ -32,6 +32,7 @@ class Tree(object):
     def __init__(self, algorithm):
         self.__root_node = None
         self.__leaf_nodes = []
+        self.__ring_nodes = []
         self.__algorithm = algorithm
         if self.__algorithm is not None:
             self.__algorithm.set_tree(self)
@@ -39,7 +40,7 @@ class Tree(object):
         return
 
     def start_token_thread(self):
-        self.__thread = TokenRingThread(self.__leaf_nodes)
+        self.__thread = TokenRingThread(self.__ring_nodes)
         self.__thread.start()
 
     def set_token_ring_wait_time(self, wait_time):
@@ -59,6 +60,8 @@ class Tree(object):
             self.__root_node = node
         elif node.is_leaf():
             self.__leaf_nodes.append(node)
+            if self.__ring_nodes.count(node.get_parent_node()) == 0:
+                self.__ring_nodes.append(node.get_parent_node())
         return
 
     ##################################################################################
@@ -233,53 +236,53 @@ def fill_tree(tree, canvas):
     node2 = Node(2)
     c2 = canvas.add_circle((canvas.get_width()/4)*3, level1, radius, fill="white", outline="black", width=2, name="2")
     node2.add_gui_node(c2)
-    node3 = Node(3)
-    c3 = canvas.add_circle(canvas.get_width()/8, level2, radius, fill="white", outline="black", width=2, name="3")
+    node3 = Node(3, True)
+    c3 = canvas.add_circle(canvas.get_width()/8, level2, radius, fill="white", outline="orange", width=2, name="3")
     node3.add_gui_node(c3)
-    node4 = Node(4)
-    c4 = canvas.add_circle((canvas.get_width()/8)*3, level2, radius, fill="white", outline="black", width=2, name="4")
+    node4 = Node(4, True)
+    c4 = canvas.add_circle((canvas.get_width()/8)*3, level2, radius, fill="white", outline="orange", width=2, name="4")
     node4.add_gui_node(c4)
-    node5 = Node(5)
-    c5 = canvas.add_circle((canvas.get_width()/8)*5, level2, radius, fill="white", outline="black", width=2, name="5")
+    node5 = Node(5, True)
+    c5 = canvas.add_circle((canvas.get_width()/8)*5, level2, radius, fill="white", outline="orange", width=2, name="5")
     node5.add_gui_node(c5)
-    node6 = Node(6)
-    c6 = canvas.add_circle((canvas.get_width()/8)*7, level2, radius, fill="white", outline="black", width=2, name="6")
+    node6 = Node(6, True)
+    c6 = canvas.add_circle((canvas.get_width()/8)*7, level2, radius, fill="white", outline="orange", width=2, name="6")
     node6.add_gui_node(c6)
     node7 = Node(7)
-    c7 = canvas.add_circle(canvas.get_width()/16, level3, radius, fill="white", outline="orange", width=2, name="7")
+    c7 = canvas.add_circle(canvas.get_width()/16, level3, radius, fill="white", outline="black", width=2, name="7")
     node7.add_gui_node(c7)
     node8 = Node(8)
-    c8 = canvas.add_circle((canvas.get_width()/16)*2, level3, radius, fill="white", outline="orange", width=2, name="8")
+    c8 = canvas.add_circle((canvas.get_width()/16)*2, level3, radius, fill="white", outline="black", width=2, name="8")
     node8.add_gui_node(c8)
     node9 = Node(9)
-    c9 = canvas.add_circle((canvas.get_width()/16)*3, level3, radius, fill="white", outline="orange", width=2, name="9")
+    c9 = canvas.add_circle((canvas.get_width()/16)*3, level3, radius, fill="white", outline="black", width=2, name="9")
     node9.add_gui_node(c9)
     node10 = Node(10)
-    c10 = canvas.add_circle((canvas.get_width()/16)*5, level3, radius, fill="white", outline="orange", width=2, name="10")
+    c10 = canvas.add_circle((canvas.get_width()/16)*5, level3, radius, fill="white", outline="black", width=2, name="10")
     node10.add_gui_node(c10)
     node11= Node(11)
-    c11 = canvas.add_circle((canvas.get_width()/16)*6, level3, radius, fill="white", outline="orange", width=2, name="11")
+    c11 = canvas.add_circle((canvas.get_width()/16)*6, level3, radius, fill="white", outline="black", width=2, name="11")
     node11.add_gui_node(c11)
     node12 = Node(12)
-    c12 = canvas.add_circle((canvas.get_width()/16)*7, level3, radius, fill="white", outline="orange", width=2, name="12")
+    c12 = canvas.add_circle((canvas.get_width()/16)*7, level3, radius, fill="white", outline="black", width=2, name="12")
     node12.add_gui_node(c12)
     node13 = Node(13)
-    c13 = canvas.add_circle((canvas.get_width()/16)*9, level3, radius, fill="white", outline="orange", width=2, name="13")
+    c13 = canvas.add_circle((canvas.get_width()/16)*9, level3, radius, fill="white", outline="black", width=2, name="13")
     node13.add_gui_node(c13)
     node14 = Node(14)
-    c14 = canvas.add_circle((canvas.get_width()/16)*10, level3, radius, fill="white", outline="orange", width=2, name="14")
+    c14 = canvas.add_circle((canvas.get_width()/16)*10, level3, radius, fill="white", outline="black", width=2, name="14")
     node14.add_gui_node(c14)
     node15 = Node(15)
-    c15 = canvas.add_circle((canvas.get_width()/16)*11, level3, radius, fill="white", outline="orange", width=2, name="15")
+    c15 = canvas.add_circle((canvas.get_width()/16)*11, level3, radius, fill="white", outline="black", width=2, name="15")
     node15.add_gui_node(c15)
     node16 = Node(16)
-    c16 = canvas.add_circle((canvas.get_width()/16)*13, level3, radius, fill="white", outline="orange", width=2, name="16")
+    c16 = canvas.add_circle((canvas.get_width()/16)*13, level3, radius, fill="white", outline="black", width=2, name="16")
     node16.add_gui_node(c16)
     node17 = Node(17)
-    c17 = canvas.add_circle((canvas.get_width()/16)*14, level3, radius, fill="white", outline="orange", width=2, name="17")
+    c17 = canvas.add_circle((canvas.get_width()/16)*14, level3, radius, fill="white", outline="black", width=2, name="17")
     node17.add_gui_node(c17)
     node18 = Node(18)
-    c18 = canvas.add_circle((canvas.get_width()/16)*15, level3, radius, fill="white", outline="orange", width=2, name="18")
+    c18 = canvas.add_circle((canvas.get_width()/16)*15, level3, radius, fill="white", outline="black", width=2, name="18")
     node18.add_gui_node(c18)
 
     canvas.add_line(c0, c1)
@@ -300,6 +303,35 @@ def fill_tree(tree, canvas):
     canvas.add_line(c6, c16)
     canvas.add_line(c6, c17)
     canvas.add_line(c6, c18)
+
+    r = canvas.get_canvas().create_rectangle(canvas.get_width()/64, level2 - (radius * 1.5), (canvas.get_width()/64)*15, level3 + (radius * 1.5), fill="white", outline="orange", width=2)
+    canvas.get_canvas().tag_lower(r)
+    canvas.get_canvas().update()
+
+    c7.set_proxy_rect(r)
+    c8.set_proxy_rect(r)
+    c9.set_proxy_rect(r)
+
+    r = canvas.get_canvas().create_rectangle((canvas.get_width()/64)*17, level2 - (radius * 1.5), (canvas.get_width()/64)*31, level3 + (radius * 1.5), fill="white", outline="orange", width=2)
+    canvas.get_canvas().tag_lower(r)
+    canvas.get_canvas().update()
+    c10.set_proxy_rect(r)
+    c11.set_proxy_rect(r)
+    c12.set_proxy_rect(r)
+
+    r = canvas.get_canvas().create_rectangle((canvas.get_width()/64)*33, level2 - (radius * 1.5), (canvas.get_width()/64)*47, level3 + (radius * 1.5), fill="white", outline="orange", width=2)
+    canvas.get_canvas().tag_lower(r)
+    canvas.get_canvas().update()
+    c13.set_proxy_rect(r)
+    c14.set_proxy_rect(r)
+    c15.set_proxy_rect(r)
+
+    r = canvas.get_canvas().create_rectangle((canvas.get_width()/64)*49, level2 - (radius * 1.5), (canvas.get_width()/64)*63, level3 + (radius * 1.5), fill="white", outline="orange", width=2)
+    canvas.get_canvas().tag_lower(r)
+    canvas.get_canvas().update()
+    c16.set_proxy_rect(r)
+    c17.set_proxy_rect(r)
+    c18.set_proxy_rect(r)
 
     node0.add_child_node(node1)
     node0.add_child_node(node2)
