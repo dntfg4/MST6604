@@ -454,6 +454,6 @@ class LocationManagementApp(Tkinter.Tk):
 
 if __name__ == "__main__":
     app = LocationManagementApp(None)
-    app.title('Inform Scheme - Pointer Search Algorithm')
+    app.title('Replication Scheme')
     app.mainloop()
     app.clean()

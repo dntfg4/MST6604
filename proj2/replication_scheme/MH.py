@@ -78,12 +78,12 @@ class MH(object):
 
     def request_token(self, mh, message=""):
         if self.get_node() is not None:
-            if self.__request_q.empty():
-                self.__request_count += 1
-                self.__request_q.put((self.get_node(), mh, message, self.__request_count))
-                self.get_node().request_token(self, self.__request_count)
-            else:
-                print "MH %d cannot request again until previous request is satisfied" % self.__name
+            #if self.__request_q.empty():
+            self.__request_count += 1
+            self.__request_q.put((self.get_node(), mh, message, self.__request_count))
+            self.get_node().request_token(self, self.__request_count)
+            #else:
+            #    print "MH %d cannot request again until previous request is satisfied" % self.__name
 
     def send_message(self, mh, message="Happy Default Message from me"):
         self.set_mode("ACTIVE", "Request Token")
@@ -97,12 +97,13 @@ class MH(object):
         q = Queue()
         while not self.__request_q.empty():
             request = self.__request_q.get(False)
-            #if request[3] < token.get_counter():
-            self.__gui.search_line("green")
-            self.get_node().send_message(request[1], request[2])
-            time.sleep(1)
-            #else:
-            #    q.put(request)
+            if request[3] <= token.get_counter():
+                self.__gui.search_line("green")
+                self.get_node().send_message(request[1], request[2])
+                time.sleep(1)
+                self.get_node().release(self, request[3])
+            else:
+                q.put(request)
 
         if not q.empty():
             del self.__request_q
@@ -127,8 +128,8 @@ class MH(object):
             q = Queue()
             while not self.__request_q.empty():
                 request = self.__request_q.get(False)
-                print "MH %d - Joining MSS %d and informing of previous token request" % (self.__name, mss.get_name())
-                mss.inform_mss(self, request[0])
+                print "MH %d - Joining MSS %d" % (self.__name, mss.get_name())
+                mss.inform_mss(self)
                 q.put(request)
 
             del self.__request_q

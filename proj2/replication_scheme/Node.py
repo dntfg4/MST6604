@@ -24,6 +24,7 @@ class Node(object):
         self.__token = None
         self.__request = Queue()
         self.__tree = None
+        self.__undeliverable = Queue()
 
     def set_tree(self, tree):
         self.__tree = tree
@@ -270,11 +271,32 @@ class Node(object):
         q = Queue()
         while not self.__request.empty():
             request = self.__request.get(False)
-            #if request[2] < self.__token.get_counter():
-            print "Token MSS %d grants token to MH %d" % (self.__name, request[1].get_name())
-            request[0].grant_process_token(self.__token, request[1])
-            #else:
-            #    q.put(request)
+            if (self.__find_ms(request[1]) is not None) and (request[2] <= self.__token.get_counter()):
+                print "Token MSS %d grants token to MH %d" % (self.__name, request[1].get_name())
+                self.grant_process_token(self.__token, request[1])
+            else:
+                q.put(request)
+
+        if not q.empty():
+            del self.__request
+            self.__request = q
+        else:
+            del q
+
+    def release(self, mh, count):
+        it = self.__tree.get_ring_nodes()
+
+        for i in it:
+            if i is not self:
+                i.delete_request(mh, count)
+
+    def delete_request(self, mh, count):
+        q = Queue()
+        while not self.__request.empty():
+            request = self.__request.get(False)
+            if not ((request[1] is mh) and (request[3] == count)):
+                q.put(request)
+                print "MSS %d deleting request: mh=%d, count=%d" % (self.__name, mh.get_name(), count)
 
         if not q.empty():
             del self.__request
@@ -296,32 +318,99 @@ class Node(object):
         return token
 
     def request_token(self, mh, count):
-        self.__request.put((self, mh, count))
+        self.__perform_phase1(mh, count)
+        self.__request.put((self, mh, count, 0))
 
     def send_message(self, ms, message):
         node = self.__tree.query_ms_location_from_node(ms, self)
         if node is not None:
             node.receive_message(ms, message)
 
+    def __perform_phase1(self, mh, count):
+        it = self.__tree.get_ring_nodes()
+        priority = -1
+
+        for i in it:
+            if i is not self:
+                pr = i.receive_remote_request(mh, count)
+                if pr > priority:
+                    priority = pr
+
+        it = self.__tree.get_ring_nodes()
+        for i in it:
+            if i is not self:
+                pr = i.receive_remote_priority_request(mh, count, pr)
+
+        return
+
+    def perform_phase2(self, mh, count):
+        return
+
+    def receive_remote_request(self, mh, count):
+        print "MSS %d got remote request of MH %d with count=%d" % (self.__name, mh.get_name(), count)
+        self.__undeliverable.put((mh, count))
+        return self.__determine_priority()
+
+    def __determine_priority(self):
+        q = Queue()
+        priority = -1
+        while not self.__request.empty():
+            request = self.__request.get(False)
+            if request[3] > priority:
+                priority = request[3]
+            q.put(request)
+        del self.__request
+        self.__request = q
+        return priority + 1
+
+    def receive_remote_priority_request(self, mh, count, priority):
+        print "MSS %d moving undeliverable request to deliverable" % self.__name
+        q = Queue()
+
+        while not self.__undeliverable.empty():
+            request = self.__undeliverable.get(False)
+            if (request[0] is mh) and (request[1] == count):
+                self.__request.put((self,request[0], request[1], priority))
+                break
+            else:
+                q.put(request)
+
+        while not q.empty():
+            request = q.get(False)
+            self.__undeliverable.put(request)
+
+        del q
+
+        self.__sort_requests()
+
+    def __sort_requests(self):
+        print "MSS %d resorting requests based on priority" % self.__name
+        requests = {}
+        i = 0
+        while not self.__request.empty():
+            requests[i] = self.__request.get(False)
+
+        i = 0
+        for i in range(len(requests)):
+            j = i + 1
+            while j < len(requests):
+                print requests[i][3]
+                if requests[i][3] < requests[j][3]:
+                    tr = requests[i]
+                    requests[i] = requests[j]
+                    requests[j] = tr
+                else:
+                    j += 1
+
+        for i in range(len(requests)):
+            self.__request.put(requests[i])
+
+        return
+
     def receive_message(self, ms, message):
         i = self.__find_ms(ms)
         if i is not None:
             self.__mh_list[i][MOBILE_STATION].process_message(message)
 
-    def inform_mss(self, mh, mss):
-        print "MSS%d - Informing MSS %d of previous token request by MH %d" % (self.__name, mss.get_name(), mh.get_name())
-        mss.inform(self, mh)
-
-    def inform(self, mss, mh):
-        print "MSS %d - Informed by MSS %d of previous token request by MH %d" % (self.__name, mss.get_name(), mh.get_name())
-        q = Queue()
-        while not self.__request.empty():
-            request = self.__request.get(False)
-            if request[1] is mh:
-                q.put((mss, request[1], request[2]))
-            else:
-                q.put(request)
-        del self.__request
-        self.__request = q
-
-
+    def inform_mss(self, mh):
+        print "MSS %d - MH %d joined" % (self.__name, mh.get_name())

@@ -1,6 +1,6 @@
 import Tkinter
 
-import LMCircle
+import AppCircle
 
 
 class CanvasApp(object):
@@ -19,7 +19,7 @@ class CanvasApp(object):
         self.__canvas.update()
 
     def add_circle(self, x, y, r, **kwargs):
-        return LMCircle.CanvasNode(self, x, y, r, **kwargs)
+        return AppCircle.CanvasNode(self, x, y, r, **kwargs)
 
     def add_line(self, c1, c2):
         c2.add_parent_line(self.__canvas.create_line(c1.get_x(), c1.get_y(), c2.get_x(), c2.get_y(), width="2"))
