@@ -16,10 +16,10 @@ class TokenRingThread(threading.Thread):
 
         Ask the thread to stop by calling its join() method.
     """
-    def __init__(self, leaf_nodes, wait=2):
+    def __init__(self, token_nodes, wait=2):
         super(TokenRingThread, self).__init__()
-        self.leaf_nodes = leaf_nodes
-        self.stoprequest = threading.Event()
+        self.__token_nodes = token_nodes
+        self.__stoprequest = threading.Event()
         self.__token = Token()
         self.__wait = wait
 
@@ -38,16 +38,16 @@ class TokenRingThread(threading.Thread):
         # As long as we weren't asked to stop, try to take new tasks from the
         # queue. The tasks are taken with a blocking 'get', so no CPU
         # cycles are wasted while waiting.
-        # Also, 'get' is given a timeout, so stoprequest is always checked,
+        # Also, 'get' is given a timeout, so __stoprequest is always checked,
         # even if there's nothing in the queue.
-        while not self.stoprequest.isSet():
+        while not self.__stoprequest.isSet():
             try:
-                it = iter(self.leaf_nodes)
+                it = iter(self.__token_nodes)
                 self.__token.increment_counter()
                 print "token counter = %d" % self.__token.get_counter()
 
                 for i in it:
-                    print "Token Ring Grant MSS%d" % i.get_name()
+                    print "Token Ring Grant MSS %d" % i.get_name()
                     self.grant_token(i)
                     time.sleep(self.__wait)
                     self.retrieve_token(i)
@@ -56,5 +56,5 @@ class TokenRingThread(threading.Thread):
                 continue
 
     def join(self, timeout=None):
-        self.stoprequest.set()
+        self.__stoprequest.set()
         super(TokenRingThread, self).join(timeout)

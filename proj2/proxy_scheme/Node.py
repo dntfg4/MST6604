@@ -1,4 +1,4 @@
-from LocationManagementConstants import *
+from Constants import *
 from Tree import *
 from Token import *
 from Queue import *
@@ -27,7 +27,7 @@ class Node(object):
         self.__proxy = proxy
         self.__proxy_node = None
         if self.__proxy:
-            print "MSS%d is a proxy" % self.__name
+            print "MSS %d is a proxy" % self.__name
 
     def set_tree(self, tree):
         self.__tree = tree
@@ -94,7 +94,7 @@ class Node(object):
         self.__parent_node = parent
         if self.__parent_node.is_proxy():
             self.__proxy_node = self.__parent_node
-            print "MSS%d has MSS%d as its proxy node" % (self.__name, self.__parent_node.get_name())
+            print "MSS %d has MSS %d as its proxy node" % (self.__name, self.__parent_node.get_name())
 
     ##################################################################################
     #
@@ -284,31 +284,33 @@ class Node(object):
             q = Queue()
             while not self.__request.empty():
                 request = self.__request.get(False)
-                if request[2] < self.__token.get_counter():
-                    if request[0] is self:
-                        child_node = self.get_child_node(request[1])
-                        if child_node is not None:
-                            print "Proxy MSS%d grants token to MH%d via MSS%d" % (self.__name, request[1].get_name(), child_node.get_name())
-                            child_node.process_mh_token(self.__token, request)
-                        else:
-                            print "Proxy MSS%d cannot find MH%d...request dropped" % (self.__name, request[1].get_name())
-                    elif request[0] is not None:
-                        request[0].process_proxy_token(self.__token, request)
-                else:
-                    q.put(request)
+                #if request[2] < self.__token.get_counter():
+                if request[0] is self:
+                    child_node = self.get_child_node(request[1])
+                    if child_node is not None:
+                        print "Proxy MSS %d grants token to MH %d via MSS %d" % (self.__name, request[1].get_name(), child_node.get_name())
+                        child_node.process_mh_token(self.__token, request)
+                    else:
+                        print "Proxy MSS %d cannot find MH %d...request dropped" % (self.__name, request[1].get_name())
+                elif request[0] is not None:
+                    request[0].process_proxy_token(self.__token, request)
+                # else:
+                #     q.put(request)
 
             if not q.empty():
                 del self.__request
                 self.__request = q
+            else:
+                del q
 
     def process_proxy_token(self, token, request):
         self.token_node()
         child_node = self.get_child_node(request[1])
         if child_node is not None:
-            print "Proxy MSS%d grants token to MH%d via MSS%d" % (self.__name, request[1].get_name(), child_node.get_name())
+            print "Proxy MSS %d grants token to MH %d via MSS %d" % (self.__name, request[1].get_name(), child_node.get_name())
             child_node.process_mh_token(token, request)
         else:
-            print "Proxy MSS%d cannot find MH%d...request dropped" % (self.__name, request[1].get_name())
+            print "Proxy MSS %d cannot find MH %d...request dropped" % (self.__name, request[1].get_name())
 
         self.untoken_node()
 
@@ -322,13 +324,13 @@ class Node(object):
 
     def get_child_node(self, mh):
         it = iter(self.__children_node)
-        print "Proxy MSS%d finding local MSS containing MH%d" % (self.__name, mh.get_name())
+        print "Proxy MSS %d finding local MSS containing MH %d" % (self.__name, mh.get_name())
         for i in it:
             if i.__find_ms(mh) is not None:
-                print "MSS%d contains MH%d" % (self.__name, mh.get_name())
+                print "MSS %d contains MH %d" % (self.__name, mh.get_name())
                 return i
             else:
-                print "MSS%d does not contain MH%d" % (i.__name, mh.get_name())
+                print "MSS %d does not contain MH %d" % (i.__name, mh.get_name())
 
         return None
 
@@ -342,7 +344,7 @@ class Node(object):
         if self.is_proxy():
             self.__request.put((self, mh, count))
             if not self.__request.empty():
-                print "Proxy MSS%d has request" % self.__name
+                print "Proxy MSS %d has request" % self.__name
         elif self.__proxy_node is not None:
             self.__proxy_node.request_token(mh, count)
 
@@ -357,19 +359,19 @@ class Node(object):
             self.__mh_list[i][MOBILE_STATION].process_message(message)
 
     def inform_mss(self, mh, mss):
-        print "MSS%d - Comparing MSS%d proxy for informing about MH%d" % (self.__name, mss.get_name(), mh.get_name())
+        print "MSS %d - Comparing MSS %d proxy for informing about MH %d" % (self.__name, mss.get_name(), mh.get_name())
         if self.__proxy_node is not mss.get_proxy():
-            print "MSS%d - Allowing Proxy MSS%d to inform Proxy MSS%d about MH%d" % (self.__name, self.__proxy_node.get_name(), mss.get_proxy().get_name(), mh.get_name())
+            print "MSS %d - Allowing Proxy MSS %d to inform Proxy MSS %d about MH %d" % (self.__name, self.__proxy_node.get_name(), mss.get_proxy().get_name(), mh.get_name())
             self.__proxy_node.inform_proxy(mss.get_proxy(), mh)
         else:
-            print "MSS%d - MH%d is in this proxy" % (self.__name, mh.get_name())
+            print "MSS %d - MH %d is in this proxy" % (self.__name, mh.get_name())
 
     def inform_proxy(self, proxy, mh):
-        print "Proxy MSS%d informing Proxy MSS%d about MH%d" % (self.__name, proxy.get_name(), mh.get_name())
+        print "Proxy MSS %d informing Proxy MSS %d about MH %d" % (self.__name, proxy.get_name(), mh.get_name())
         proxy.inform(self, mh)
 
     def inform(self, mss, mh):
-        print "Proxy MSS%d - Informed by Proxy MSS%d of previous token request by MH%d" % (self.__name, mss.get_name(), mh.get_name())
+        print "Proxy MSS %d - Informed by Proxy MSS %d of previous token request by MH %d" % (self.__name, mss.get_name(), mh.get_name())
         q = Queue()
         while not self.__request.empty():
             request = self.__request.get(False)

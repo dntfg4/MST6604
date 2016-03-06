@@ -9,7 +9,7 @@ __date__ = '$Date: 2016/02/17 12:00:00 $'
 __copyright__ = '2016 James Soehlke and David N. Taylor'
 __license__ = 'Python'
 
-from LocationManagementConstants import *
+from Constants import *
 from Tree import *
 
 ##################################################################################
@@ -256,7 +256,7 @@ class PointerAlgorithm(Algorithm):
         # initialize the update count
         self.set_update_count(0)
 
-        if not node.is_leaf():
+        if (node is None) or (not node.is_leaf()):
             return
 
         # get the node where ms is located

@@ -58,6 +58,12 @@ class CanvasNode(object):
     def untoken_node(self):
         self.__canvas_app.get_canvas().itemconfig(self.__canvas_node,fill=self.__prev_color)
 
+    def message_node(self):
+        self.__canvas_app.get_canvas().itemconfig(self.__canvas_node,fill="cyan")
+
+    def unmessage_node(self):
+        self.__canvas_app.get_canvas().itemconfig(self.__canvas_node,fill="white")
+
     def get_x(self):
         return self.__x
 

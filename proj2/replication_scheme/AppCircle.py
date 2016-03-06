@@ -16,14 +16,7 @@ class CanvasNode(object):
         self.__y = 0
         self.__r = 0
         self.__create_circle(x, y, r, **kwargs)
-        self.__proxy_rect = None
         return
-
-    def set_proxy_rect(self, proxy_rect):
-        self.__proxy_rect = proxy_rect
-
-    def get_proxy_rect(self):
-        return self.__proxy_rect
 
     def __create_circle(self, x, y, r, **kwargs):
         name = kwargs["name"]
@@ -38,7 +31,6 @@ class CanvasNode(object):
 
     def add_parent_line(self, line):
         self.__canvas_line = line
-        self.__canvas_app.get_canvas().tag_raise(self.__canvas_line)
         self.__canvas_app.get_canvas().tag_lower(self.__canvas_line)
         self.__canvas_app.get_canvas().tag_raise(self.__canvas_node)
         self.__canvas_app.get_canvas().tag_raise(self.__canvas_text)
@@ -94,6 +86,4 @@ class CanvasNode(object):
         self.__canvas_text = None
         self.__create_circle(canvas_node.get_x(), canvas_node.get_y() + 100, canvas_node.get_r(), fill="white", outline="black", width=2, name=text)
         self.__canvas_app.add_line(canvas_node, self)
-        if canvas_node.get_proxy_rect() is not None:
-            self.__canvas_app.get_canvas().tag_lower(canvas_node.get_proxy_rect())
         self.__canvas_app.get_canvas().update()

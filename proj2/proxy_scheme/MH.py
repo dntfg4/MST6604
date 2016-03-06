@@ -1,5 +1,5 @@
-from LocationManagementAlgorithms import *
-from LMCircle import *
+from Algorithms import *
+from AppCircle import *
 from Queue import *
 import time
 
@@ -71,16 +71,19 @@ class MH(object):
 
     def set_mode(self, mode, reason):
         self.__mode = mode
-        print "MH%d is in %s Mode: %s" % (self.get_name(), self.__mode, reason)
+        print "MH %d is in %s Mode: %s" % (self.get_name(), self.__mode, reason)
 
     def get_mode(self):
         return self.__mode
 
     def request_token(self, mh, message=""):
         if self.get_node() is not None:
-            self.__request_count += 1
-            self.__request_q.put((self.get_node(), mh, message, self.__request_count))
-            self.get_node().request_token(self, self.__request_count)
+            if self.__request_q.empty():
+                self.__request_count += 1
+                self.__request_q.put((self.get_node(), mh, message, self.__request_count))
+                self.get_node().request_token(self, self.__request_count)
+            else:
+                print "MH %d cannot request again until previous request is satisfied" % self.__name
 
     def send_message(self, mh, message="Happy Default Message from me"):
         self.set_mode("ACTIVE", "Request Token")
@@ -91,19 +94,21 @@ class MH(object):
         self.set_mode("ACTIVE", "Processing Token")
         self.__gui.token_node()
         self.__request_count = token.get_counter()
-        time.sleep(1)
         q = Queue()
         while not self.__request_q.empty():
             request = self.__request_q.get(False)
-            if request[3] < token.get_counter():
-                self.__gui.search_line("green")
-                self.get_node().send_message(request[1], request[2])
-            else:
-                q.put(request)
+            #if request[3] < token.get_counter():
+            self.__gui.search_line("green")
+            self.get_node().send_message(request[1], request[2])
+            time.sleep(1)
+            #else:
+            #    q.put(request)
 
         if not q.empty():
             del self.__request_q
             self.__request_q = q
+        else:
+            del q
 
         self.__gui.untoken_node()
         self.set_mode("DOZE", "Returned Token")
@@ -111,7 +116,10 @@ class MH(object):
     def process_message(self, message):
         self.set_mode("ACTIVE", "Processing Message")
         self.__gui.search_line("green")
-        print "MH%d - Received Message: %s" % (self.__name, message)
+        self.__gui.message_node()
+        print "MH %d - Received Message: %s" % (self.__name, message)
+        time.sleep(1)
+        self.__gui.unmessage_node()
         self.set_mode("DOZE", "Processed Message")
 
     def join(self, mss):
@@ -119,7 +127,7 @@ class MH(object):
             q = Queue()
             while not self.__request_q.empty():
                 request = self.__request_q.get(False)
-                print "MH%d - Informing MSS%d of previous token request" % (self.__name, mss.get_name())
+                print "MH %d - Joining MSS %d and informing of previous token request" % (self.__name, mss.get_name())
                 mss.inform_mss(self, request[0])
                 q.put(request)
 
