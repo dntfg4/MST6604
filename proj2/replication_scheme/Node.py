@@ -319,7 +319,7 @@ class Node(object):
 
     def request_token(self, mh, count):
         self.__perform_phase1(mh, count)
-        self.__request.put((self, mh, count, 0))
+        #self.__request.put((self, mh, count, 0))
 
     def send_message(self, ms, message):
         node = self.__tree.query_ms_location_from_node(ms, self)
@@ -341,10 +341,8 @@ class Node(object):
             if i is not self:
                 pr = i.receive_remote_priority_request(mh, count, pr)
 
-        return
-
-    def perform_phase2(self, mh, count):
-        return
+        self.__request.put((self, mh, count, pr))
+        self.__sort_requests()
 
     def receive_remote_request(self, mh, count):
         print "MSS %d got remote request of MH %d with count=%d" % (self.__name, mh.get_name(), count)
@@ -387,14 +385,15 @@ class Node(object):
         print "MSS %d resorting requests based on priority" % self.__name
         requests = {}
         i = 0
+
         while not self.__request.empty():
             requests[i] = self.__request.get(False)
+            i += 1
 
         i = 0
         for i in range(len(requests)):
             j = i + 1
             while j < len(requests):
-                print requests[i][3]
                 if requests[i][3] < requests[j][3]:
                     tr = requests[i]
                     requests[i] = requests[j]

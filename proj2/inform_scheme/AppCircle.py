@@ -1,4 +1,4 @@
-from LMTreeCanvas import *
+from AppCanvas import *
 
 class CanvasNode(object):
     ##################################################################################
