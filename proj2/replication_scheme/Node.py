@@ -269,12 +269,14 @@ class Node(object):
         self.__token = token
         self.token_node()
         q = Queue()
+        service = True
         while not self.__request.empty():
             request = self.__request.get(False)
-            if (self.__find_ms(request[1]) is not None) and (request[2] <= self.__token.get_counter()):
+            if service and (self.__find_ms(request[1]) is not None) and (request[2] <= self.__token.get_counter()):
                 print "Token MSS %d grants token to MH %d" % (self.__name, request[1].get_name())
                 self.grant_process_token(self.__token, request[1])
             else:
+                service = False
                 q.put(request)
 
         if not q.empty():
@@ -294,9 +296,10 @@ class Node(object):
         q = Queue()
         while not self.__request.empty():
             request = self.__request.get(False)
-            if not ((request[1] is mh) and (request[3] == count)):
+            if (request[1] is mh) and (request[2] == count):
+                print "MSS %d deleting request: mh=%d, count=%d, queue item count = %d" % (self.__name, request[1].get_name(), request[2], self.__request.qsize())
+            else:
                 q.put(request)
-                print "MSS %d deleting request: mh=%d, count=%d" % (self.__name, mh.get_name(), count)
 
         if not q.empty():
             del self.__request
@@ -319,7 +322,6 @@ class Node(object):
 
     def request_token(self, mh, count):
         self.__perform_phase1(mh, count)
-        #self.__request.put((self, mh, count, 0))
 
     def send_message(self, ms, message):
         node = self.__tree.query_ms_location_from_node(ms, self)
@@ -328,7 +330,7 @@ class Node(object):
 
     def __perform_phase1(self, mh, count):
         it = self.__tree.get_ring_nodes()
-        priority = -1
+        priority = 0
 
         for i in it:
             if i is not self:
@@ -339,10 +341,11 @@ class Node(object):
         it = self.__tree.get_ring_nodes()
         for i in it:
             if i is not self:
-                pr = i.receive_remote_priority_request(mh, count, pr)
+                i.receive_remote_priority_request(mh, count, priority)
 
-        self.__request.put((self, mh, count, pr))
+        self.__request.put((self, mh, count, priority))
         self.__sort_requests()
+        print "MSS %d queue count is %d" % (self.__name, self.__request.qsize())
 
     def receive_remote_request(self, mh, count):
         print "MSS %d got remote request of MH %d with count=%d" % (self.__name, mh.get_name(), count)
@@ -362,7 +365,7 @@ class Node(object):
         return priority + 1
 
     def receive_remote_priority_request(self, mh, count, priority):
-        print "MSS %d moving undeliverable request to deliverable" % self.__name
+        print "MSS %d moving undeliverable request to deliverable, priority = %d" % (self.__name, priority)
         q = Queue()
 
         while not self.__undeliverable.empty():
@@ -394,7 +397,7 @@ class Node(object):
         for i in range(len(requests)):
             j = i + 1
             while j < len(requests):
-                if requests[i][3] < requests[j][3]:
+                if requests[i][3] > requests[j][3]:
                     tr = requests[i]
                     requests[i] = requests[j]
                     requests[j] = tr
@@ -402,6 +405,7 @@ class Node(object):
                     j += 1
 
         for i in range(len(requests)):
+            print requests[i]
             self.__request.put(requests[i])
 
         return
