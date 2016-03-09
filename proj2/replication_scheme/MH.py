@@ -95,13 +95,15 @@ class MH(object):
         self.__gui.token_node()
         self.__request_count = token.get_counter()
         q = Queue()
+        service = True
         while not self.__request_q.empty():
             request = self.__request_q.get(False)
-            if request[3] <= token.get_counter():
+            if service and (request[3] <= token.get_counter()):
                 self.__gui.search_line("green")
                 self.get_node().send_message(request[1], request[2])
                 time.sleep(1)
                 self.get_node().release(self, request[3])
+                service = False
             else:
                 q.put(request)
 
