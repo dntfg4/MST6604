@@ -42,6 +42,7 @@ class Disk(object):
 
     def generate_chunks(self, number_of_chunks):
         data_per_chunk = int(math.ceil(float(len(self.__values))/float(number_of_chunks)))
+        print "Disk%d has %d chunks with maximum of %d items per chunk" % (self.__name, number_of_chunks, data_per_chunk)
         for i in range(number_of_chunks):
             chunk = []
             for j in range(data_per_chunk):
@@ -68,15 +69,15 @@ class Disk(object):
             data.append(i[0])
 
         print "Disk%d:" % self.__name
-        print "     Number of Data:     ", len(self.__values)
-        print "     Data Items:         ", data
-        print "     Optimal Frequency:  ", self.__f
-        print "     Access Percentage:  ", self.get_q()
-        #print "     Spacing:            ", self.__spacing
-        print "     Number of Chunks:   ", len(self.__chunks)
+        print "     Number of Data:     %d" % len(self.__values)
+        print "     Data Items:         [ %s ]" % " | ".join(data)
+        print "     Frequency:          %d" % self.__f
+        print "     Access Percentage:  %f" % self.get_q()
+        print "     Spacing:            %d" % self.__spacing
+        print "     Number of Chunks:   %d" % len(self.__chunks)
 
         for i in range(len(self.__chunks)):
-            print "         C(", self.__name, ",", i, "):   ", self.__chunks[i]
+            print "                         C(%s,%s):   [ %s ]" % (str(self.__name), str(i), " | ".join(self.__chunks[i]))
 
     def __sort(self):
         length = len(self.__values)
@@ -84,16 +85,23 @@ class Disk(object):
         for i in range(length):
             j = i + 1
             while j < length:
-                if self.__values[i][0] > self.__values[j][0]:
+                if self.__values[i][1] < self.__values[j][1]:
                     tmp = self.__values[i]
                     self.__values[i] = self.__values[j]
                     self.__values[j] = tmp
+                elif self.__values[i][1] == self.__values[j][1]:
+                    if self.__values[i][0] > self.__values[j][0]:
+                        tmp = self.__values[i]
+                        self.__values[i] = self.__values[j]
+                        self.__values[j] = tmp
+                    else:
+                        j += 1
                 else:
                     j += 1
 
 
 if __name__ == "__main__":
-    d = Disk()
+    d = Disk(1)
     d.add_data(5, 0.2)
     d.add_data(4, .3)
     d.add_data(6, .2)

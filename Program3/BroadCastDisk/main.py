@@ -12,29 +12,10 @@ if __name__ == "__main__":
             line = line.strip()
             if len(line) > 0:
                 line_split = line.split(':')
-                page = int(line_split[0])
+                data = line_split[0]
                 percentage = eval(compile(line_split[1], '<string>', 'eval', __future__.division.compiler_flag))
-                bdisk.add_data(page, percentage)
+                bdisk.add_data(data, percentage)
     else:
-        while True:
-            try:
-                user_input = raw_input("Please enter data number: ")
-                if user_input == "":
-                    break
-                data = int(user_input)
-                print "you entered %d" % data
-                bp = False
-                while not bp:
-                    try:
-                        percentage = raw_input("Please enter percentage: ")
-                        percentage = eval(compile(percentage, '<string>', 'eval', __future__.division.compiler_flag))
-                        print "percentage %f" % percentage
-                        bp = True
-                        bdisk.add_data(data, percentage)
-                    except:
-                        print "Enter a percentage between 0.0 and 1.0"
-
-            except:
-                print "Invalid value...must be integer"
+        print "Usage: python main.py <input file>"
 
     bdisk.generate_schedule()
