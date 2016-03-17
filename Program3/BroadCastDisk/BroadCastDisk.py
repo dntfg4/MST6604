@@ -19,19 +19,21 @@ class BroadCastDisk(object):
             return self.__values[p]
 
     def generate_schedule(self):
+        print "Input Data and Percentages (%d items):" % len(self.__values)
+        it = iter(self.__values)
+        for i in it:
+            print " (%s:%f)" % (i[0], i[1])
+
         self.__sort()
         self.__generate_disks()
         self.__generate_frequencies()
-        self.__determine_length()
-        self.__determine_spacing()
+        length = self.__determine_length()
+        self.__determine_spacing(length)
         max_chunks = self.__generate_chunks()
+        broadcast = self.__generate_broadcast(max_chunks)
+        self.__print_info(max_chunks, broadcast)
 
-        it = iter(self.__disks)
-        for i in it:
-            print ""
-            i.print_disk_info()
-
-        self.__generate_broadcast(max_chunks)
+        return broadcast
 
     def __gcd(self, a, b):
         if b == 0:
@@ -43,19 +45,22 @@ class BroadCastDisk(object):
         return (a * b)/self.__gcd(a, b)
 
     def __calculate_lcm(self):
+        llcm = 0
+        print "\nCalculating LCM:                                   Started"
         if len(self.__disks) > 1:
             llcm = self.__lcm(self.__disks[0].get_frequency(), self.__disks[1].get_frequency())
 
             for i in range(2, len(self.__disks)):
                 llcm = self.__lcm(self.__disks[i].get_frequency(), llcm)
-
-            return llcm
         elif len(self.__disks) > 0:
-            return self.__disks[0].get_frequency()
-        else:
-            return 0
+            llcm = self.__disks[0].get_frequency()
+
+        print "Calculating LCM:                                   Finished"
+        print "LCM: %d" % llcm
+        return llcm
 
     def __generate_broadcast(self, max_chunks):
+        print "\nGenerating broadcast:                                Started"
         broadcast = []
         for i in range(max_chunks):
             for j in range(len(self.__disks)):
@@ -64,47 +69,39 @@ class BroadCastDisk(object):
                 if chunk is not None:
                     for l in range(len(chunk)):
                         broadcast.append(chunk[l])
-
-        print "\nBroadcast will have %d data items" % len(broadcast)
-        print "\nBroadcast :", broadcast
-        broadcast_stack = []
-        for i in range(3):
-            broadcast_stack.append("|")
-
-        for i in range(len(broadcast)):
-            if broadcast[i] < 10:
-                broadcast_stack[i % len(broadcast_stack)] = broadcast_stack[i % len(broadcast_stack)] + " " + str(broadcast[i]) + " | "
-            else:
-                broadcast_stack[i % len(broadcast_stack)] = broadcast_stack[i % len(broadcast_stack)] +  str(broadcast[i]) + " | "
-
-        print "\nBroadcast Row view :"
-        for i in range(len(broadcast_stack)):
-            print "     ", broadcast_stack[i]
+        print "Generating broadcast:                                Finished"
+        return broadcast
 
     def __determine_length(self):
+        print "\nDetermining broadcast length:                      Started"
         length = 0
         it = iter(self.__disks)
         for i in it:
             length += (i.get_number_of_data() * i.get_frequency())
 
+        print "Determining broadcast length:                      Finished"
+        print "Broadcast length: %d" % length
         return length
 
-    def __determine_spacing(self):
+    def __determine_spacing(self, length):
         it = iter(self.__disks)
-        length = self.__determine_length()
         for i in it:
             i.set_spacing(length/i.get_frequency())
 
     def __generate_chunks(self):
         max_chunks = self.__calculate_lcm()
+        print "\nGenerating chunks:                                 Started"
+        print "Maximum number of chunks on a disk: %d" % max_chunks
         it = iter(self.__disks)
 
         for i in it:
             i.generate_chunks(max_chunks/i.get_frequency())
 
+        print "Generating chunks:                                 Finished"
         return max_chunks
 
     def __generate_disks(self):
+        print "\nGenerating Disks by grouping access percentages:   Started"
         if len(self.__values) > 0:
             starting_point = self.__values[0][1]
             name = 1
@@ -119,16 +116,30 @@ class BroadCastDisk(object):
                     disk = Disk(name)
                     self.__disks.append(disk)
                     disk.add_data(self.__values[i][0], self.__values[i][1])
+        print "Generating Disks by grouping access percentages:   Finished"
+        print "There are %d Disks" % len(self.__disks)
 
     def __generate_frequencies(self):
+        print "\nGenerating Disk frequencies:                       Started"
+        self.__disks.reverse()
+
         if len(self.__disks) > 0:
-            lowest_disk = self.__disks[len(self.__disks) - 1]
+            lowest_disk = self.__disks[0]
             it = iter(self.__disks)
             for i in it:
-                i.set_frequency(int(math.floor(math.sqrt(i.get_q()/lowest_disk.get_q()))))
+                freq = math.sqrt(i.get_q()/lowest_disk.get_q())
+                freq_int = int(math.floor(freq))
+                print "Disk%d q = %f" % (i.get_name(), i.get_q())
+                print "Disk%d raw frequency = %f" % (i.get_name(), freq)
+                print "Disk%d floor frequency = %f" % (i.get_name(), freq_int)
+                i.set_frequency(freq_int)
+                print "Disk%d frequency = %d" % (i.get_name(), i.get_frequency())
+        self.__disks.reverse()
+        print "Generating Disk frequencies:                       Finished"
 
     def __sort(self):
         length = len(self.__values)
+        print "\nSorting input values by access percentage:         Started"
 
         for i in range(length):
             j = i + 1
@@ -139,6 +150,29 @@ class BroadCastDisk(object):
                     self.__values[j] = tmp
                 else:
                     j += 1
+        print "Sorting input values by access percentage:         Finished"
+
+    def __print_info(self, max_chunks, broadcast):
+        it = iter(self.__disks)
+        for i in it:
+            print ""
+            i.print_disk_info()
+
+        print "\nBroadcast will have %d data items" % len(broadcast)
+        print "Broadcast : [", " | ".join(broadcast), "]"
+        broadcast_stack = []
+        for i in range(3):
+            broadcast_stack.append("|")
+
+        for i in range(len(broadcast)):
+            if len(broadcast[i]) < 2:
+                broadcast_stack[i % len(broadcast_stack)] = broadcast_stack[i % len(broadcast_stack)] + "  " + broadcast[i] + " |"
+            else:
+                broadcast_stack[i % len(broadcast_stack)] = broadcast_stack[i % len(broadcast_stack)] +  " " + broadcast[i] + " |"
+
+        print "\nBroadcast Column view :"
+        for i in range(len(broadcast_stack)):
+            print "     ", broadcast_stack[i]
 
 if __name__ == "__main__":
     bdisk = BroadCastDisk()
@@ -150,10 +184,10 @@ if __name__ == "__main__":
     bdisk.add_data(3, .05)
     bdisk.add_data(7, .05)
 
-    for i in range(1, bdisk.get_number_of_data() + 1):
-        print "Data: %d, Percentage: %f" % bdisk.get_data_index(i)
+    for i in range(bdisk.get_number_of_data()):
+        print "Data: %s, Percentage: %f" % bdisk.get_data_index(i)
 
-    d = Disk()
+    d = Disk(1)
     d.add_data(5, 0.2)
     d.add_data(4, .3)
     d.add_data(6, .2)
