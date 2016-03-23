@@ -22,16 +22,17 @@ class BroadCastDisk(object):
         print "Input Data and Percentages (%d items):" % len(self.__values)
         it = iter(self.__values)
         for i in it:
-            print " (%s:%f)" % (i[0], i[1])
+            print " (%s:%0.6f)" % (i[0], i[1])
 
+        print "\nGenerating Broadcast Schedule:                     Started"
         self.__sort()
         self.__generate_disks()
         self.__generate_frequencies()
         length = self.__determine_length()
-        self.__determine_spacing(length)
         max_chunks = self.__generate_chunks()
         broadcast = self.__generate_broadcast(max_chunks)
         self.__print_info(max_chunks, broadcast)
+        print "\nGenerating Broadcast Schedule:                     Finished"
 
         return broadcast
 
@@ -83,11 +84,6 @@ class BroadCastDisk(object):
         print "Broadcast length: %d" % length
         return length
 
-    def __determine_spacing(self, length):
-        it = iter(self.__disks)
-        for i in it:
-            i.set_spacing(length/i.get_frequency())
-
     def __generate_chunks(self):
         max_chunks = self.__calculate_lcm()
         print "\nGenerating chunks:                                 Started"
@@ -129,9 +125,9 @@ class BroadCastDisk(object):
             for i in it:
                 freq = math.sqrt(i.get_q()/lowest_disk.get_q())
                 freq_int = int(math.floor(freq))
-                print "Disk%d q = %f" % (i.get_name(), i.get_q())
-                print "Disk%d raw frequency = %f" % (i.get_name(), freq)
-                print "Disk%d floor frequency = %f" % (i.get_name(), freq_int)
+                print "Disk%d q = %0.6f" % (i.get_name(), i.get_q())
+                print "Disk%d raw frequency = %0.6f" % (i.get_name(), freq)
+                print "Disk%d floor frequency = %0.6f" % (i.get_name(), freq_int)
                 i.set_frequency(freq_int)
                 print "Disk%d frequency = %d" % (i.get_name(), i.get_frequency())
         self.__disks.reverse()
@@ -185,7 +181,7 @@ if __name__ == "__main__":
     bdisk.add_data(7, .05)
 
     for i in range(bdisk.get_number_of_data()):
-        print "Data: %s, Percentage: %f" % bdisk.get_data_index(i)
+        print "Data: %s, Percentage: %0.6f" % bdisk.get_data_index(i)
 
     d = Disk(1)
     d.add_data(5, 0.2)
@@ -198,5 +194,5 @@ if __name__ == "__main__":
     d.determine_q()
     d.set_frequency(3)
     print "Number of data = %d" % d.get_number_of_data()
-    print "Q = %f" % d.get_q()
+    print "Q = %0.6f" % d.get_q()
     print "Frequency = %d" % d.get_frequency()

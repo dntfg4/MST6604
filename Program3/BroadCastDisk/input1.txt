@@ -9,3 +9,7 @@ d:1/32
 c:1/32
 b:1/32
 a:1/32
+LIX:a,b,c,d,e
+PIXClient:a,b,c,b,a,a
+PIXCacheSize:1
+PIXBroadcast:a,b,a,c,a,d

@@ -30,5 +30,8 @@
 11:1/21
 2:4/21
 9:4/21
-
 26:4/21
+LIX:a,b,c,d,e
+PIXClient:a,b,c,b,a,a
+PIXCacheSize:1
+PIXBroadcast:a,b,a,c,a,d
