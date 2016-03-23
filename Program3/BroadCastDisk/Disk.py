@@ -8,7 +8,6 @@ class Disk(object):
         self.__q = 0.0
         self.__f = 0
         self.__name = name
-        self.__spacing = 0
 
     def get_name(self):
         return self.__name
@@ -56,12 +55,6 @@ class Disk(object):
     def get_frequency(self):
         return self.__f
 
-    def set_spacing(self, spacing):
-        self.__spacing = spacing
-
-    def get_spacing(self):
-        return self.__spacing
-
     def print_disk_info(self):
         it = iter(self.__values)
         data = []
@@ -72,8 +65,7 @@ class Disk(object):
         print "     Number of Data:     %d" % len(self.__values)
         print "     Data Items:         [ %s ]" % " | ".join(data)
         print "     Frequency:          %d" % self.__f
-        print "     Access Percentage:  %f" % self.get_q()
-        print "     Spacing:            %d" % self.__spacing
+        print "     Access Percentage:  %0.6f" % self.get_q()
         print "     Number of Chunks:   %d" % len(self.__chunks)
 
         for i in range(len(self.__chunks)):
