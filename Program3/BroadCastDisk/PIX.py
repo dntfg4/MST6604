@@ -79,7 +79,6 @@ class PIX(object):
         while i < len(self.__client_data):
             while True:
                 if self.__client_data[i] == self.__broadcast[b]:
-                    self.__add_to_cache(self.__client_data[i])
                     self.__client_data[i] = '[' + self.__client_data[i] + ']'
                     while (i + 1) < (len(self.__client_data)) and (self.__broadcast[b] == self.__client_data[i+1]):
                         i += 1
@@ -91,6 +90,7 @@ class PIX(object):
                         self.__client_data[i] = '[' + self.__client_data[i] + ']'
                     i += 1
                     self.__print_info(b)
+                    self.__add_to_cache(self.__broadcast[b])
                     b = self.__increment(b)
                     break
 
@@ -128,11 +128,13 @@ class PIX(object):
         if data == self.__cache[0]:
             return
 
+        i = 0
+
         for i in range(len(self.__cache)):
             if self.__cache[i] == data:
                 break
 
-        while (i > 0):
+        while i > 0:
             self.__cache[i] = self.__cache[i - 1]
             i -= 1
 
@@ -173,7 +175,7 @@ class PIX(object):
         print "\nPIX Step:             %d" % self.__pix_step
         print "PIX Value:            %s" % self.__pix_values
         self.__broadcast[b] = '[' + self.__broadcast[b] + ']'
-        print "PIX Broadcast:        [ %s ]" % " ".join(self.__broadcast)
+        print "PIX Broadcast:        [ %s ]" % " | ".join(self.__broadcast)
         self.__broadcast[b] = self.__broadcast[b].strip('[]')
-        print "PIX Cache(%d):         [ %s ]" % (self.__cache_size, " ".join(self.__cache))
-        print "PIX Client Data:      [ %s ]" % " ".join(self.__client_data)
+        print "PIX Cache(%d):         [ %s ]" % (self.__cache_size, " | ".join(self.__cache))
+        print "PIX Client Data:      [ %s ]" % " | ".join(self.__client_data)
