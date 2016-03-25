@@ -1,0 +1,3 @@
+PIXClient:b,a,c,a,d,b
+PIXCacheSize:1
+PIXBroadcast:a,b,c,a,d,a
