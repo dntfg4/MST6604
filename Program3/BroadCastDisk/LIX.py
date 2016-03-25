@@ -42,13 +42,6 @@ class LIXTable(object):
         it = iter(self.__lix_values)
         for i in it:
             if i[0] == data:
-                a = i[1][2]
-                b = float(time - i[1][0])
-                c = a/b
-                d = (1.0 - i[1][2])
-                e = i[1][1]
-                f = d * e
-                g = c + f
                 i[1][1] = (i[1][2]/float(time - i[1][0])) + ((1.0 - i[1][2]) * i[1][1])
                 i[1][0] = time
                 return i[1][1]
@@ -57,11 +50,15 @@ class LIXTable(object):
         if len(self.__lix_table[0][1]) == 0:
             return
 
-        top_row = ['']
+        top_row = ["                      pi"]
         for i in range(len(self.__lix_table[0][1])):
-            top_row.append(str(i + 1))
+            top_row.append("|   " + str(i + 1))
+            if (i + 1) < 10:
+                top_row.append("    ")
+            else:
+                top_row.append("   ")
         print "LIX Table:"
-        print "                      %s" % "  |     ".join(top_row)
+        print "%s" % ''.join(top_row)
         it = iter(self.__lix_table)
         for i in it:
             next_row = [i[0]]
@@ -116,7 +113,6 @@ class LIX(object):
                     self.__client_data[i] = '[' + self.__client_data[i] + ']'
                     while (i + 1) < (len(self.__client_data)) and (self.__broadcast[b] == self.__client_data[i+1]):
                         i += 1
-                        self.__cache_move_to_top(self.__client_data[i])
                         self.__client_data[i] = '[' + self.__client_data[i] + ']'
                     while ((i + 1) < len(self.__client_data)) and self.__data_in_cache(self.__client_data[i+1]):
                         i += 1
@@ -186,16 +182,19 @@ class LIX(object):
             return
 
         i = 0
+        found = False
 
         for i in range(self.__cache_size):
             if self.__cache[i][disk_number] == data:
+                found = True
                 break
 
-        while i > 0:
-            self.__cache[i][disk_number] = self.__cache[i - 1][disk_number]
-            i -= 1
+        if found:
+            while i > 0:
+                self.__cache[i][disk_number] = self.__cache[i - 1][disk_number]
+                i -= 1
 
-        self.__cache[0][disk_number] = data
+            self.__cache[0][disk_number] = data
 
     def __data_in_cache(self, data):
         disk_number = self.__which_disk_contains(data)

@@ -1,0 +1,5 @@
+LIXDisk:a:3
+LIXDisk:b,c,d:1
+LIXBroadcast:a,b,a,c,a,d
+LIXClient:a,b,c,b,a,a
+LIXCacheSize:2

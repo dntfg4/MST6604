@@ -82,7 +82,6 @@ class PIX(object):
                     self.__client_data[i] = '[' + self.__client_data[i] + ']'
                     while (i + 1) < (len(self.__client_data)) and (self.__broadcast[b] == self.__client_data[i+1]):
                         i += 1
-                        self.__cache_move_to_top(self.__client_data[i])
                         self.__client_data[i] = '[' + self.__client_data[i] + ']'
                     while ((i + 1) < len(self.__client_data)) and self.__in_cache(self.__client_data[i+1]):
                         i += 1
@@ -129,28 +128,28 @@ class PIX(object):
             return
 
         i = 0
+        found = False
 
         for i in range(len(self.__cache)):
             if self.__cache[i] == data:
+                found = True
                 break
 
-        while i > 0:
-            self.__cache[i] = self.__cache[i - 1]
-            i -= 1
+        if found:
+            while i > 0:
+                self.__cache[i] = self.__cache[i - 1]
+                i -= 1
 
-        self.__cache[0] = data
+            self.__cache[0] = data
 
     def __cache_remove_by_pix(self, data):
         pix_value = self.__get_pix_value(data)
         pix_loc = self.__cache_size + 1
 
         for i in range(len(self.__cache)):
-            px = iter(self.__pix_values)
-
-            for p in px:
-                if p[1] < pix_value:
-                    pix_value = p[1]
-                    pix_loc = i
+            if self.__get_pix_value(self.__cache[i]) < pix_value:
+                pix_value = self.__get_pix_value(self.__cache[i])
+                pix_loc = i
 
         while pix_loc < (len(self.__cache) - 1):
             self.__cache[pix_loc] = self.__cache[pix_loc + 1]

@@ -1,0 +1,11 @@
+BroadCastDisk:k:1/2
+BroadCastDisk:j:1/8
+BroadCastDisk:i:1/8
+BroadCastDisk:h:1/32
+BroadCastDisk:g:1/32
+BroadCastDisk:f:1/32
+BroadCastDisk:e:1/32
+BroadCastDisk:d:1/32
+BroadCastDisk:c:1/32
+BroadCastDisk:b:1/32
+BroadCastDisk:a:1/32
