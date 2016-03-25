@@ -178,3 +178,6 @@ class PIX(object):
         self.__broadcast[b] = self.__broadcast[b].strip('[]')
         print "PIX Cache(%d):         [ %s ]" % (self.__cache_size, " | ".join(self.__cache))
         print "PIX Client Data:      [ %s ]" % " | ".join(self.__client_data)
+
+        raw_input('\nPress Enter Key to Continue:')
+        print "\n"

@@ -240,3 +240,6 @@ class LIX(object):
         for i in range(len(self.__cache)):
             print "                      [ %s ]" % " | ".join(self.__cache[i])
         print "LIX Client Data:      [ %s ]" % " | ".join(self.__client_data)
+
+        raw_input('\nPress Enter Key to Continue:')
+        print "\n"
