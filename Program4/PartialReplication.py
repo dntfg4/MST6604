@@ -150,7 +150,7 @@ class PartialReplication(object):
         self.__calculate_index_offsets()
 
         for i in range(1, len(self.__pages)):
-            if self.__pages[i].get_control_index() is None:
+            if (self.__pages[i].get_type() == INDEX_TYPE) and (self.__pages[i].get_control_index() is None):
                 j = i - 1
                 data = None
                 ci = ControlIndex()
@@ -239,13 +239,49 @@ class PartialReplication(object):
                     pretty_print = '|' + '** ' + self.__pages[i].get_name() + ' **' + '|'
                 else:
                     pretty_print = '|' + self.__pages[i].get_name() + '|'
-        print "%s\n\n" % pretty_print
+        print "%s\n" % pretty_print
+
+        if page is not None:
+            print "Page (%s) Information:" % page.get_name()
+            name = self.__pages[0].get_name().split('-')[0]
+            if page.get_type() == INDEX_TYPE:
+                print "\tIndex Segment"
+                if page is self.__pages[0]:
+                    print "\tControl Index Information:"
+                    print "\t\tNON\t:\tNON"
+                elif (page is not self.__pages[0]) and (page.get_name().split('-')[0] == name):
+                    print "\tControl Index Information:"
+                    print "\t\t%s\t:\t%s" % (page.get_control_index().get_lower_bound().get_name(), page.get_control_index().get_lower_bound_next().get_name())
+                elif page.get_control_index() is not None:
+                    print "\tControl Index Information:"
+                    if page.get_control_index().get_lower_bound() is not None:
+                        print "\t\t%s\t:\t%s" % (page.get_control_index().get_lower_bound().get_name(), page.get_control_index().get_lower_bound_next().get_name())
+                    else:
+                        print "\t\tNON\t:\tNON"
+                    if page.get_control_index().get_upper_bound() is not None:
+                        print "\t\t%s\t:\t%s" % (page.get_control_index().get_upper_bound().get_name(), page.get_control_index().get_upper_bound_next().get_name())
+                    else:
+                        print "\t\tNON\t:\tNON"
+                elif (page.get_type() == INDEX_TYPE) and (page.get_data_offset() is not None):
+                    print "\tData Offset Information:"
+                    print "\t\tData Page:\t%" % page.get_data_offset().get_name()
+            else:
+                print "\tData Segment"
+                print "\tIndex Offset Information:"
+                print "\t\tIndex Page:\t%s" % page.get_index().get_name()
+        print "\n"
 
     def __run(self):
         self.__pretty_print(None)
-        a = raw_input("Enter data to seek:")
+        a = raw_input("Enter page to seek (Enter Key to Exit):")
+        while (len(a) > 0) and not self.__validate(a):
+            print "%s is not a valid page name. Try again."
+            a = raw_input("Enter page to seek (Enter Key to Exit):")
         while len(a) > 0:
-            b = raw_input("Enter where to start:")
+            b = raw_input("Enter page where to start:")
+            while not self.__validate(b):
+                print "%s is not a valid page name. Try again."
+                b = raw_input("Enter page where to start:")
             print "\nThe current page name will be surrounded by '**'s"
             j = 0
             for i in range(len(self.__pages)):
@@ -301,5 +337,15 @@ class PartialReplication(object):
                                 i += 1
                 if not found:
                     self.__pretty_print(p)
-                    raw_input("Pausing....press enter to continue")
-            a = raw_input("Enter data to seek:")
+                    raw_input("Pausing....press Enter Key to continue")
+            a = raw_input("Enter page to seek (Enter Key to Exit):")
+            while (len(a) > 0) and not self.__validate(a):
+                print "%s is not a valid page name. Try again."
+                a = raw_input("Enter page to seek (Enter Key to Exit):")
+
+    def __validate(self, a):
+        it = iter(self.__pages)
+        for i in it:
+            if i.get_name() == a:
+                return True
+        return False
