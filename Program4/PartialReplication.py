@@ -150,7 +150,7 @@ class PartialReplication(object):
         self.__calculate_index_offsets()
 
         for i in range(1, len(self.__pages)):
-            if (self.__pages[i].get_type() == INDEX_TYPE) and (self.__pages[i].get_control_index() is None):
+            if (self.__pages[i].get_type() == INDEX_TYPE) and (self.__pages[i].get_control_index() is None) and (self.__pages[i].get_data_offset() is None):
                 j = i - 1
                 data = None
                 ci = ControlIndex()
@@ -264,7 +264,7 @@ class PartialReplication(object):
                         print "\t\tNON\t:\tNON"
                 elif (page.get_type() == INDEX_TYPE) and (page.get_data_offset() is not None):
                     print "\tData Offset Information:"
-                    print "\t\tData Page:\t%" % page.get_data_offset().get_name()
+                    print "\t\tData Page:\t%s" % page.get_data_offset().get_name()
             else:
                 print "\tData Segment"
                 print "\tIndex Offset Information:"
